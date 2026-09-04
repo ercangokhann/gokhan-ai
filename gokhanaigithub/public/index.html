@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>gokhan.ai — Giriş</title>
+<link rel="stylesheet" href="/theme.css">
+</head>
+<body class="locked">
+
+<canvas id="rain" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+<div class="scan" aria-hidden="true"></div>
+
+<div class="shell">
+  <div class="topbar">
+    <span>gokhan.ai&nbsp;/&nbsp;giriş</span>
+    <span class="right">
+      <span id="clock">--:--:--</span>
+    </span>
+  </div>
+
+  <div class="stage">
+    <main class="panel">
+      <div class="panel-head">
+        <div class="mark">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+            <circle cx="13" cy="13" r="11.2" stroke="#D97757" stroke-width="1.1" opacity=".55"/>
+            <circle cx="13" cy="13" r="6.4" stroke="#F0A57E" stroke-width="1.1"/>
+            <circle cx="13" cy="13" r="1.9" fill="#D97757"/>
+            <path d="M13 .8v4.4M13 20.8v4.4M.8 13h4.4M20.8 13h4.4" stroke="#D97757" stroke-width="1.1" opacity=".7"/>
+          </svg>
+          <div class="wordmark">gokhan<em>.ai</em></div>
+        </div>
+        <div class="tagline">hesabınıza giriş yapın</div>
+      </div>
+
+      <form id="auth" autocomplete="on" novalidate>
+        <div class="field">
+          <label for="op">Kullanıcı adı <span class="hint">veya e-posta</span></label>
+          <div class="inp">
+            <span class="caret">&gt;</span>
+            <input id="op" name="username" type="text" autocomplete="username" spellcheck="false" placeholder="ör. e.gokhan" autofocus>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="pw">Şifre <span class="hint">en az 12 karakter</span></label>
+          <div class="inp">
+            <span class="caret">&gt;</span>
+            <input id="pw" name="password" type="password" autocomplete="current-password" placeholder="••••••••••••">
+            <button type="button" class="ghost" id="reveal" aria-label="Şifreyi göster">göster</button>
+          </div>
+          <div class="caps" id="caps"><span></span>Caps Lock açık</div>
+        </div>
+
+        <div class="row">
+          <label class="check">
+            <input type="checkbox" id="keep" checked>
+            <span class="box"></span>
+            Oturumu 12 saat açık tut
+          </label>
+          <a class="link" href="#" id="forgot">Şifremi unuttum</a>
+        </div>
+
+        <button class="submit" type="submit" id="go">
+          <span class="fill" id="fill"></span>
+          <span class="txt" id="gotxt">Giriş yap</span>
+        </button>
+      </form>
+
+      <div class="log" id="log" aria-live="polite"></div>
+    </main>
+  </div>
+
+  <div class="footer">
+    <span class="pulse"><i></i>bağlantı güvenli</span>
+    <span id="hint" class="dim"></span>
+    <span>gokhan.ai</span>
+  </div>
+</div>
+
+<script src="/rain.js"></script>
+<script src="/app.js"></script>
+<script>
+(function(){
+  var form = document.getElementById('auth'), go = document.getElementById('go');
+  var gotxt = document.getElementById('gotxt'), fill = document.getElementById('fill');
+  var op = document.getElementById('op'), pw = document.getElementById('pw');
+  var keep = document.getElementById('keep'), busy = false;
+
+  NP.clock('clock');
+  NP.capsWatch(pw, 'caps');
+  NP.revealToggle('pw', 'reveal');
+  NP.rainOnType(['op','pw']);
+
+  NP.say('log', 'güvenli bağlantı kuruldu');
+  NP.say('log', 'kullanıcı adı bekleniyor');
+
+  // zaten oturum varsa doğrudan içeri
+  NP.get('/api/me').then(function(r){
+    if (r.ok) location.href = r.data.user.mustChange ? '/change.html' : '/chat.html';
+  });
+
+  function progress(to, ms){
+    var start = performance.now(), from = parseFloat(fill.style.width) || 0;
+    return new Promise(function(done){
+      (function step(t){
+        var k = Math.min(1, (t - start) / ms);
+        fill.style.width = (from + (to - from) * k) + '%';
+        k < 1 ? requestAnimationFrame(step) : done();
+      })(start);
+    });
+  }
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    if (busy) return;
+    var username = op.value.trim(), password = pw.value;
+    if (!username) { NP.say('log','<span class="er">kullanıcı adı gerekli</span>'); op.focus(); return; }
+    if (!password) { NP.say('log','<span class="er">şifre gerekli</span>'); pw.focus(); return; }
+
+    busy = true; go.disabled = true; go.className = 'submit';
+    gotxt.textContent = 'Doğrulanıyor…';
+    window.rainSet(3.2);
+    NP.say('log', 'giriş isteği: <span class="v">' + NP.esc(username) + '</span>');
+    progress(70, 700);
+
+    var r = await NP.post('/api/login', { username: username, password: password, keep: keep.checked });
+
+    if (r.ok) {
+      await progress(100, 260);
+      go.classList.add('granted');
+      gotxt.textContent = 'Giriş başarılı';
+      NP.say('log', '<span class="ok">oturum açıldı</span> · ' + NP.esc(r.data.user.displayName || username));
+      setTimeout(function(){
+        location.href = r.data.user.mustChange ? '/change.html' : '/chat.html';
+      }, 650);
+      return;
+    }
+
+    fill.style.width = '0%';
+    go.classList.add('denied');
+    gotxt.textContent = 'Reddedildi';
+    NP.say('log', '<span class="er">' + NP.esc(r.data.error || 'giriş başarısız') + '</span>');
+    if (typeof r.data.remaining === 'number') {
+      document.getElementById('hint').textContent = 'kalan deneme: ' + r.data.remaining;
+    }
+    window.rainSet(1);
+    pw.value = ''; pw.focus();
+    setTimeout(function(){
+      go.disabled = false; busy = false;
+      go.className = 'submit'; gotxt.textContent = 'Giriş yap';
+    }, 1400);
+  });
+
+  document.getElementById('forgot').addEventListener('click', function(e){
+    e.preventDefault();
+    NP.say('log', 'şifreni yönetici sıfırlar — yöneticine başvur');
+  });
+})();
+</script>
+</body>
+</html>

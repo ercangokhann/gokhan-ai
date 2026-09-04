@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: gokhan-ai
+    runtime: node
+    region: frankfurt
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_USERNAME
+        value: gokhan
+      - key: ADMIN_EMAIL
+        value: ercang958@gmail.com
+      - key: ADMIN_DISPLAY_NAME
+        value: Gökhan
+      - key: ADMIN_PASSWORD
+        generateValue: true          # ilk şifre otomatik üretilir, panelde görünür
+      - key: AI_PROVIDER
+        value: gemini
+      - key: AI_MODEL
+        value: gemini-3.6-flash
+      - key: AI_REASONING
+        value: low
+      - key: AI_API_KEY
+        sync: false                  # gizli — Render panelinden girilir
+      - key: DATABASE_URL
+        sync: false                  # Neon ya da Render Postgres bağlantı adresi

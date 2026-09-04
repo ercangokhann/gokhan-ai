@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>gokhan.ai — Şifre değiştir</title>
+<link rel="stylesheet" href="/theme.css">
+</head>
+<body class="locked">
+
+<canvas id="rain" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+<div class="scan" aria-hidden="true"></div>
+
+<div class="shell">
+  <div class="topbar">
+    <span>gokhan.ai&nbsp;/&nbsp;şifre değiştir</span>
+    <span class="right">
+      <span id="who"></span>
+      <a href="#" id="out">çıkış</a>
+      <span id="clock">--:--:--</span>
+    </span>
+  </div>
+
+  <div class="stage">
+    <main class="panel">
+      <div class="panel-head">
+        <div class="mark">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+            <circle cx="13" cy="13" r="11.2" stroke="#D97757" stroke-width="1.1" opacity=".55"/>
+            <circle cx="13" cy="13" r="6.4" stroke="#F0A57E" stroke-width="1.1"/>
+            <circle cx="13" cy="13" r="1.9" fill="#D97757"/>
+            <path d="M13 .8v4.4M13 20.8v4.4M.8 13h4.4M20.8 13h4.4" stroke="#D97757" stroke-width="1.1" opacity=".7"/>
+          </svg>
+          <div class="wordmark">gokhan<em>.ai</em></div>
+        </div>
+        <div class="tagline" id="sub">yeni bir şifre belirleyin</div>
+      </div>
+
+      <form id="chg" novalidate>
+        <div class="note" id="forced" style="display:none">
+          Hesabınıza <strong>geçici bir şifre</strong> ile giriş yaptınız. Devam etmek için kendi şifrenizi belirlemelisiniz.
+        </div>
+
+        <div class="field">
+          <label for="cur">Mevcut şifre</label>
+          <div class="inp">
+            <span class="caret">&gt;</span>
+            <input id="cur" type="password" autocomplete="current-password" placeholder="••••••••••••">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="n1">Yeni şifre <span class="hint">en az 12 karakter</span></label>
+          <div class="inp">
+            <span class="caret">&gt;</span>
+            <input id="n1" type="password" autocomplete="new-password" placeholder="••••••••••••">
+            <button type="button" class="ghost" id="reveal" aria-label="Şifreyi göster">göster</button>
+          </div>
+          <div class="caps" id="caps"><span></span>Caps Lock açık</div>
+        </div>
+
+        <div class="field">
+          <label for="n2">Yeni şifre (tekrar)</label>
+          <div class="inp">
+            <span class="caret">&gt;</span>
+            <input id="n2" type="password" autocomplete="new-password" placeholder="••••••••••••">
+          </div>
+        </div>
+
+        <div class="msg" id="msg"></div>
+
+        <button class="submit" type="submit" id="go">
+          <span class="fill" id="fill"></span>
+          <span class="txt" id="gotxt">Şifreyi güncelle</span>
+        </button>
+      </form>
+
+      <div class="log" id="log" aria-live="polite"></div>
+    </main>
+  </div>
+
+  <div class="footer">
+    <span class="pulse"><i></i>bağlantı güvenli</span>
+    <span class="dim">şifreler scrypt ile saklanır</span>
+    <span>gokhan.ai</span>
+  </div>
+</div>
+
+<script src="/rain.js"></script>
+<script src="/app.js"></script>
+<script>
+(function(){
+  var msg = document.getElementById('msg'), go = document.getElementById('go');
+  var gotxt = document.getElementById('gotxt'), fill = document.getElementById('fill');
+  var cur = document.getElementById('cur'), n1 = document.getElementById('n1'), n2 = document.getElementById('n2');
+  var me = null;
+
+  NP.clock('clock');
+  NP.capsWatch(n1, 'caps');
+  NP.revealToggle('n1', 'reveal');
+  NP.rainOnType(['cur','n1','n2']);
+
+  NP.guard({ allowMustChange: true }).then(function(u){
+    if (!u) return;
+    me = u;
+    document.getElementById('who').textContent = u.username;
+    if (u.mustChange) {
+      document.getElementById('forced').style.display = '';
+      document.getElementById('sub').textContent = 'ilk giriş · şifre değişikliği zorunlu';
+      NP.say('log', 'geçici şifreyle giriş yapıldı — yeni şifre gerekli');
+    } else {
+      NP.say('log', 'oturum doğrulandı · <span class="v">' + NP.esc(u.username) + '</span>');
+    }
+    cur.focus();
+  });
+
+  document.getElementById('out').addEventListener('click', async function(e){
+    e.preventDefault();
+    await NP.post('/api/logout');
+    location.href = '/';
+  });
+
+  document.getElementById('chg').addEventListener('submit', async function(e){
+    e.preventDefault();
+    msg.className = 'msg'; msg.textContent = '';
+
+    if (n1.value !== n2.value) {
+      msg.className = 'msg err'; msg.textContent = 'Yeni şifreler birbiriyle eşleşmiyor.';
+      n2.focus(); return;
+    }
+    if (n1.value.length < 12) {
+      msg.className = 'msg err'; msg.textContent = 'Yeni şifre en az 12 karakter olmalı.';
+      n1.focus(); return;
+    }
+
+    go.disabled = true; gotxt.textContent = 'Güncelleniyor…';
+    fill.style.width = '65%'; window.rainSet(2.6);
+
+    var r = await NP.post('/api/password', { current: cur.value, next: n1.value });
+
+    if (r.ok) {
+      fill.style.width = '100%';
+      go.classList.add('granted'); gotxt.textContent = 'Güncellendi';
+      msg.className = 'msg ok'; msg.textContent = 'Şifreniz değişti. Diğer tüm oturumlar kapatıldı.';
+      NP.say('log', '<span class="ok">şifre güncellendi</span> · diğer oturumlar düşürüldü');
+      setTimeout(function(){ location.href = '/chat.html'; }, 900);
+      return;
+    }
+
+    fill.style.width = '0%'; window.rainSet(1);
+    go.disabled = false; go.classList.remove('granted'); gotxt.textContent = 'Şifreyi güncelle';
+    msg.className = 'msg err'; msg.textContent = r.data.error || 'Güncellenemedi.';
+    NP.say('log', '<span class="er">' + NP.esc(r.data.error || 'hata') + '</span>');
+  });
+})();
+</script>
+</body>
+</html>

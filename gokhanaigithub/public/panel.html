@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>gokhan.ai — Panel</title>
+<link rel="stylesheet" href="/theme.css">
+</head>
+<body>
+
+<canvas id="rain" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+<div class="scan" aria-hidden="true"></div>
+
+<div class="shell">
+  <div class="topbar">
+    <span>gokhan.ai&nbsp;/&nbsp;kontrol paneli</span>
+    <span class="right">
+      <span id="whoami"></span>
+      <a href="/chat.html">çalışma alanı</a>
+      <a href="/change.html">şifre değiştir</a>
+      <a href="#" id="out">çıkış</a>
+      <span id="clock">--:--:--</span>
+    </span>
+  </div>
+
+  <div class="stage wide">
+    <main class="panel wide">
+      <div class="panel-head">
+        <div class="mark">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+            <circle cx="13" cy="13" r="11.2" stroke="#D97757" stroke-width="1.1" opacity=".55"/>
+            <circle cx="13" cy="13" r="6.4" stroke="#F0A57E" stroke-width="1.1"/>
+            <circle cx="13" cy="13" r="1.9" fill="#D97757"/>
+            <path d="M13 .8v4.4M13 20.8v4.4M.8 13h4.4M20.8 13h4.4" stroke="#D97757" stroke-width="1.1" opacity=".7"/>
+          </svg>
+          <div class="wordmark">gokhan<em>.ai</em></div>
+        </div>
+        <div class="tagline" id="sub">yükleniyor…</div>
+      </div>
+
+      <!-- sekmeler (yalnız yönetici) -->
+      <div class="pad" id="tabs" style="display:none;padding-bottom:0;border-bottom:0">
+        <div class="acts" style="justify-content:flex-start">
+          <button class="btn primary" data-tab="log">Giriş kayıtları</button>
+          <button class="btn" data-tab="users">Kullanıcılar</button>
+          <button class="btn" data-tab="live">Açık oturumlar</button>
+          <button class="btn" data-tab="usage">Yapay zeka kullanımı</button>
+        </div>
+      </div>
+
+      <!-- OPERATÖR görünümü -->
+      <section class="pad" id="selfView" style="display:none">
+        <h2>Hesabınız</h2>
+        <table><tbody id="selfTable"></tbody></table>
+      </section>
+
+      <!-- GİRİŞ KAYITLARI -->
+      <section class="pad" id="tab-log" style="display:none">
+        <h2>Giriş kayıtları</h2>
+        <div class="acts" style="justify-content:flex-start;margin-bottom:14px">
+          <div class="inp" style="flex:1;min-width:200px">
+            <span class="caret">/</span>
+            <input id="q" type="text" placeholder="ad, e-posta, kullanıcı adı veya IP ara" spellcheck="false">
+          </div>
+          <button class="btn" id="scopeBtn" data-scope="login">Yalnız girişler</button>
+          <button class="btn" id="refreshLog">Yenile</button>
+          <button class="btn" id="csv">CSV indir</button>
+        </div>
+        <div id="logWrap"></div>
+      </section>
+
+      <!-- OPERATÖRLER -->
+      <section class="pad" id="tab-users" style="display:none">
+        <h2>Yeni kullanıcı ekle</h2>
+        <div class="newrow">
+          <div class="field">
+            <label for="nUser">Kullanıcı adı</label>
+            <div class="inp"><span class="caret">&gt;</span><input id="nUser" type="text" placeholder="ör. a.yilmaz" spellcheck="false"></div>
+          </div>
+          <div class="field">
+            <label for="nName">Ad soyad</label>
+            <div class="inp"><span class="caret">&gt;</span><input id="nName" type="text" placeholder="Ayşe Yılmaz"></div>
+          </div>
+          <div class="field">
+            <label for="nMail">E-posta</label>
+            <div class="inp"><span class="caret">&gt;</span><input id="nMail" type="text" placeholder="ayse@ornek.com" spellcheck="false"></div>
+          </div>
+          <div class="field">
+            <label for="nRole">Yetki</label>
+            <div class="inp"><select id="nRole"><option value="operator">Kullanıcı</option><option value="admin">Yönetici</option></select></div>
+          </div>
+        </div>
+        <div class="acts" style="justify-content:flex-start;margin-top:12px">
+          <button class="btn primary" id="addUser">Kullanıcıyı oluştur</button>
+          <span class="msg" id="addMsg"></span>
+        </div>
+        <div id="secretBox"></div>
+
+        <h2 style="margin-top:26px">Kullanıcılar</h2>
+        <div id="usersWrap"></div>
+      </section>
+
+      <!-- YAPAY ZEKA KULLANIMI -->
+      <section class="pad" id="tab-usage" style="display:none">
+        <h2>Bu ayki yapay zeka kullanımı</h2>
+        <div id="providerNote"></div>
+        <div id="usageWrap" style="margin-top:14px"></div>
+      </section>
+
+      <!-- AÇIK OTURUMLAR -->
+      <section class="pad" id="tab-live" style="display:none">
+        <h2>Şu an açık oturumlar</h2>
+        <div class="acts" style="justify-content:flex-start;margin-bottom:14px">
+          <button class="btn" id="refreshLive">Yenile</button>
+        </div>
+        <div id="liveWrap"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="footer">
+    <span class="pulse"><i></i>bağlantı güvenli</span>
+    <span class="dim" id="stat"></span>
+    <span>gokhan.ai</span>
+  </div>
+</div>
+
+<script src="/rain.js"></script>
+<script src="/app.js"></script>
+<script>
+(function(){
+  var me = null, users = [], events = [], scope = 'login';
+  var E = NP.esc;
+  if (window.rainSet) window.rainSet(0.55); // panelde arka plan daha sakin
+
+  NP.clock('clock');
+
+  NP.guard({}).then(function(u){
+    if (!u) return;
+    me = u;
+    document.getElementById('whoami').textContent = u.username + (u.role === 'admin' ? ' · yönetici' : '');
+    document.getElementById('sub').textContent =
+      (u.displayName || u.username) + ' · ' + (u.role === 'admin' ? 'yönetici erişimi' : 'standart erişim');
+
+    if (u.role === 'admin') {
+      document.getElementById('tabs').style.display = '';
+      show('log');
+      loadLog(); loadUsers();
+    } else {
+      document.getElementById('selfView').style.display = '';
+      document.getElementById('selfTable').innerHTML =
+        row('Ad soyad', E(u.displayName || '—')) +
+        row('E-posta', E(u.email || '—')) +
+        row('Kullanıcı adı', E(u.username)) +
+        row('Son giriş', u.lastLoginAt ? NP.stamp(u.lastLoginAt) + ' <span class="dim">(' + NP.ago(u.lastLoginAt) + ')</span>' : '—') +
+        row('Son giriş IP', E(u.lastLoginIp || '—')) +
+        row('Hesap açılışı', NP.stamp(u.createdAt));
+    }
+  });
+
+  function row(k, v){ return '<tr><td class="dim" style="width:160px">' + k + '</td><td>' + v + '</td></tr>'; }
+
+  document.getElementById('out').addEventListener('click', async function(e){
+    e.preventDefault(); await NP.post('/api/logout'); location.href = '/';
+  });
+
+  /* ── sekmeler ─────────────────────────────────────── */
+  function show(name){
+    ['log','users','live','usage'].forEach(function(t){
+      document.getElementById('tab-' + t).style.display = (t === name ? '' : 'none');
+    });
+    document.querySelectorAll('#tabs .btn').forEach(function(b){
+      b.className = 'btn' + (b.dataset.tab === name ? ' primary' : '');
+    });
+    if (name === 'live') loadLive();
+    if (name === 'usage') loadUsage();
+  }
+  document.querySelectorAll('#tabs .btn').forEach(function(b){
+    b.addEventListener('click', function(){ show(b.dataset.tab); });
+  });
+
+  /* ── giriş kayıtları ──────────────────────────────── */
+  var LABEL = {
+    'login.ok': ['Giriş başarılı', 'ok'],
+    'login.fail': ['Başarısız deneme', 'er'],
+    'login.locked': ['Kilitli hesap denemesi', 'er'],
+    'login.blocked': ['Devre dışı hesap denemesi', 'er'],
+    'logout': ['Çıkış', ''],
+    'password.change': ['Şifre değiştirildi', 'ok'],
+    'password.change.fail': ['Şifre değiştirme hatası', 'er'],
+    'password.reset': ['Şifre sıfırlandı (yönetici)', 'v'],
+    'user.create': ['Kullanıcı eklendi', 'v'],
+    'user.update': ['Kullanıcı güncellendi', 'v'],
+    'user.delete': ['Kullanıcı silindi', 'er'],
+    'user.unlock': ['Kilit kaldırıldı', 'v'],
+    'bootstrap': ['Sistem kuruldu', 'v']
+  };
+
+  async function loadLog(){
+    var qv = document.getElementById('q').value.trim();
+    var r = await NP.get('/api/log?scope=' + scope + '&limit=200&q=' + encodeURIComponent(qv));
+    if (!r.ok) return;
+    events = r.data.events;
+    var wrap = document.getElementById('logWrap');
+    if (!events.length){ wrap.innerHTML = '<div class="empty">Kayıt yok.</div>'; return; }
+
+    wrap.innerHTML =
+      '<table><thead><tr>' +
+      '<th>Zaman</th><th>Ad soyad</th><th>E-posta</th><th>Kullanıcı adı</th>' +
+      '<th>IP</th><th class="hide-s">Cihaz</th><th>Olay</th>' +
+      '</tr></thead><tbody>' +
+      events.map(function(e){
+        var L = LABEL[e.action] || [e.action, ''];
+        return '<tr>' +
+          '<td class="dim">' + NP.stamp(e.at) + '</td>' +
+          '<td>' + E(e.actor_name || '—') + '</td>' +
+          '<td>' + E(e.actor_email || '—') + '</td>' +
+          '<td>' + E(e.actor || '—') + '</td>' +
+          '<td>' + E(e.ip || '—') + '</td>' +
+          '<td class="hide-s dim">' + E(NP.device(e.ua)) + '</td>' +
+          '<td><span class="' + (L[1] === 'ok' ? 'tag ok' : L[1] === 'er' ? 'tag bad' : L[1] === 'v' ? 'tag info' : 'tag op') + '">' + E(L[0]) + '</span>' +
+            (e.detail ? '<div class="dim" style="font-size:10.5px;margin-top:3px">' + E(e.detail) + '</div>' : '') +
+          '</td></tr>';
+      }).join('') + '</tbody></table>';
+    document.getElementById('stat').textContent = events.length + ' kayıt gösteriliyor';
+  }
+
+  var qTimer;
+  document.getElementById('q').addEventListener('input', function(){
+    clearTimeout(qTimer); qTimer = setTimeout(loadLog, 280);
+  });
+  document.getElementById('refreshLog').addEventListener('click', loadLog);
+  document.getElementById('scopeBtn').addEventListener('click', function(){
+    scope = scope === 'login' ? 'all' : 'login';
+    this.textContent = scope === 'login' ? 'Yalnız girişler' : 'Tüm olaylar';
+    loadLog();
+  });
+
+  document.getElementById('csv').addEventListener('click', function(){
+    var head = ['zaman','ad_soyad','eposta','kimlik','ip','cihaz','olay','detay'];
+    var lines = [head.join(',')].concat(events.map(function(e){
+      return [NP.stamp(e.at), e.actor_name, e.actor_email, e.actor, e.ip,
+              NP.device(e.ua), (LABEL[e.action] || [e.action])[0], e.detail]
+        .map(function(v){ return '"' + String(v == null ? '' : v).replace(/"/g,'""') + '"'; }).join(',');
+    }));
+    var blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'gokhan-ai-kayitlar-' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click(); URL.revokeObjectURL(a.href);
+  });
+
+  /* ── kullanıcılar ──────────────────────────────────── */
+  async function loadUsers(){
+    var r = await NP.get('/api/users');
+    if (!r.ok) return;
+    users = r.data.users;
+    var wrap = document.getElementById('usersWrap');
+    wrap.innerHTML =
+      '<table><thead><tr><th>Kullanıcı adı</th><th>Ad soyad</th><th>E-posta</th>' +
+      '<th class="hide-s">Son giriş</th><th>Durum</th><th></th></tr></thead><tbody>' +
+      users.map(function(u){
+        var locked = u.lockedUntil && new Date(u.lockedUntil) > new Date();
+        return '<tr>' +
+          '<td>' + E(u.username) + (u.id === me.id ? ' <span class="dim">(siz)</span>' : '') + '</td>' +
+          '<td>' + E(u.displayName || '—') + '</td>' +
+          '<td>' + E(u.email || '—') + '</td>' +
+          '<td class="hide-s dim">' + (u.lastLoginAt ? NP.ago(u.lastLoginAt) + '<br>' + E(u.lastLoginIp || '') : 'hiç girmedi') + '</td>' +
+          '<td>' +
+            '<span class="tag ' + (u.role === 'admin' ? 'admin' : 'op') + '">' + (u.role === 'admin' ? 'yönetici' : 'kullanıcı') + '</span> ' +
+            (u.disabled ? '<span class="tag off">kapalı</span> ' : '') +
+            (locked ? '<span class="tag lock">kilitli</span> ' : '') +
+            (u.mustChange ? '<span class="tag lock">geçici şifre</span>' : '') +
+          '</td>' +
+          '<td><div class="acts">' +
+            '<button class="btn" data-act="reset" data-id="' + u.id + '">Şifre sıfırla</button>' +
+            (locked ? '<button class="btn" data-act="unlock" data-id="' + u.id + '">Kilidi aç</button>' : '') +
+            (u.id === me.id ? '' :
+              '<button class="btn" data-act="toggle" data-id="' + u.id + '">' + (u.disabled ? 'Aç' : 'Kapat') + '</button>' +
+              '<button class="btn danger" data-act="del" data-id="' + u.id + '">Sil</button>') +
+          '</div></td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+
+  function secret(title, user, pw){
+    document.getElementById('secretBox').innerHTML =
+      '<div class="note good" style="margin-top:14px">' +
+      '<strong>' + E(title) + '</strong><br>' +
+      E(user.displayName || user.username) + ' · ' + E(user.email || '') + ' · kimlik <strong>' + E(user.username) + '</strong><br>' +
+      'Bu geçici şifre <strong>yalnızca bir kez</strong> gösterilir. Kullanıcı ilk girişte kendi şifresini belirleyecek.' +
+      '<div class="secret"><code>' + E(pw) + '</code>' +
+      '<button class="btn" id="copyPw">Kopyala</button></div></div>';
+    var b = document.getElementById('copyPw');
+    b.addEventListener('click', function(){
+      navigator.clipboard.writeText(pw).then(function(){ b.textContent = 'Kopyalandı'; });
+    });
+  }
+
+  document.getElementById('addUser').addEventListener('click', async function(){
+    var msg = document.getElementById('addMsg');
+    msg.className = 'msg'; msg.textContent = 'oluşturuluyor…';
+    var r = await NP.post('/api/users', {
+      username: document.getElementById('nUser').value,
+      displayName: document.getElementById('nName').value,
+      email: document.getElementById('nMail').value,
+      role: document.getElementById('nRole').value
+    });
+    if (!r.ok){ msg.className = 'msg err'; msg.textContent = r.data.error || 'Eklenemedi.'; return; }
+    msg.className = 'msg ok'; msg.textContent = 'Kullanıcı oluşturuldu.';
+    ['nUser','nName','nMail'].forEach(function(id){ document.getElementById(id).value = ''; });
+    secret('Geçici şifre oluşturuldu', r.data.user, r.data.tempPassword);
+    loadUsers(); loadLog();
+  });
+
+  document.getElementById('usersWrap').addEventListener('click', async function(ev){
+    var b = ev.target.closest('button[data-act]');
+    if (!b) return;
+    var id = b.dataset.id, u = users.find(function(x){ return x.id === id; });
+    b.disabled = true;
+
+    if (b.dataset.act === 'reset'){
+      if (!confirm(u.username + ' için yeni geçici şifre üretilsin mi? Mevcut oturumları kapanacak.')) { b.disabled = false; return; }
+      var r = await NP.post('/api/users/' + id + '/reset');
+      if (r.ok){ show('users'); secret('Şifre sıfırlandı', r.data.user, r.data.tempPassword); }
+      else alert(r.data.error || 'Sıfırlanamadı.');
+    }
+    if (b.dataset.act === 'unlock'){
+      await NP.post('/api/users/' + id + '/unlock');
+    }
+    if (b.dataset.act === 'toggle'){
+      var r2 = await NP.patch('/api/users/' + id, { disabled: !u.disabled });
+      if (!r2.ok) alert(r2.data.error || 'Güncellenemedi.');
+    }
+    if (b.dataset.act === 'del'){
+      if (!confirm(u.username + ' kalıcı olarak silinsin mi?')) { b.disabled = false; return; }
+      var r3 = await NP.del('/api/users/' + id);
+      if (!r3.ok) alert(r3.data.error || 'Silinemedi.');
+    }
+    loadUsers(); loadLog();
+  });
+
+  /* ── açık oturumlar ───────────────────────────────── */
+  async function loadLive(){
+    var r = await NP.get('/api/sessions');
+    if (!r.ok) return;
+    var s = r.data.sessions, wrap = document.getElementById('liveWrap');
+    if (!s.length){ wrap.innerHTML = '<div class="empty">Açık oturum yok.</div>'; return; }
+    wrap.innerHTML =
+      '<table><thead><tr><th>Ad soyad</th><th>E-posta</th><th>Kullanıcı adı</th><th>IP</th>' +
+      '<th class="hide-s">Cihaz</th><th>Başlangıç</th><th>Bitiş</th></tr></thead><tbody>' +
+      s.map(function(x){
+        return '<tr><td>' + E(x.displayName || '—') + '</td><td>' + E(x.email || '—') + '</td>' +
+          '<td>' + E(x.username) + '</td><td>' + E(x.ip || '—') + '</td>' +
+          '<td class="hide-s dim">' + E(NP.device(x.ua)) + '</td>' +
+          '<td class="dim">' + NP.stamp(x.createdAt) + '</td>' +
+          '<td class="dim">' + NP.stamp(x.expiresAt) + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+  document.getElementById('refreshLive').addEventListener('click', loadLive);
+
+  /* ── yapay zeka kullanımı ─────────────────────────── */
+  async function loadUsage(){
+    var r = await NP.get('/api/usage');
+    if (!r.ok) return;
+    var d = r.data, s = d.saglayici.standart;
+    document.getElementById('providerNote').innerHTML =
+      '<div class="note"><strong>' + E(s.ad) + '</strong>' + (s.model ? ' · ' + E(s.model) : '') +
+      (d.saglayici.hazir ? '' : ' — <span style="color:var(--warn)">anahtar tanımlı değil, sistem demo cevabı veriyor</span>') +
+      (s.not ? '<br>' + E(s.not) : '') +
+      '<br>Kullanıcı başına aylık sınır: ' + (d.aylikSinir/1000000).toFixed(1) + 'M token.' +
+      (d.saglayici.gizli ? '<br>Gizli mod: ' + E(d.saglayici.gizli.ad) : '') + '</div>';
+
+    var rows = d.rows;
+    document.getElementById('usageWrap').innerHTML =
+      '<table><thead><tr><th>Kullanıcı</th><th>E-posta</th><th>İstek</th>' +
+      '<th>Gelen token</th><th>Giden token</th><th>Toplam</th><th class="hide-s">Son kullanım</th></tr></thead><tbody>' +
+      rows.map(function(u){
+        var tot = Number(u.gelen) + Number(u.giden);
+        var pct = Math.min(100, Math.round(tot / d.aylikSinir * 100));
+        return '<tr><td>' + E(u.display_name || u.username) + '<div class="dim" style="font-size:10.5px">' + E(u.username) + '</div></td>' +
+          '<td>' + E(u.email || '—') + '</td><td>' + u.istek + '</td>' +
+          '<td class="dim">' + Number(u.gelen).toLocaleString('tr-TR') + '</td>' +
+          '<td class="dim">' + Number(u.giden).toLocaleString('tr-TR') + '</td>' +
+          '<td><span class="tag ' + (pct > 80 ? 'bad' : pct > 0 ? 'ok' : 'op') + '">' +
+            tot.toLocaleString('tr-TR') + ' · %' + pct + '</span></td>' +
+          '<td class="hide-s dim">' + (u.son ? NP.ago(u.son) : '—') + '</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+})();
+</script>
+</body>
+</html>

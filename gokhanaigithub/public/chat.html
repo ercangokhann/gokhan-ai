@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>gokhan.ai — Çalışma alanı</title>
+<link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/chat.css">
+</head>
+<body class="app">
+
+<canvas id="rain" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+<div class="scan" aria-hidden="true"></div>
+
+<div class="shell">
+  <div class="topbar">
+    <span>gokhan.ai&nbsp;/&nbsp;çalışma alanı</span>
+    <span class="right">
+      <span id="whoami"></span>
+      <a href="/panel.html" id="panelLink" style="display:none">panel</a>
+      <a href="/change.html">şifre değiştir</a>
+      <a href="#" id="out">çıkış</a>
+      <span id="clock">--:--:--</span>
+    </span>
+  </div>
+
+  <div class="stage wide">
+    <main class="panel wide" style="width:min(1080px,100%)">
+      <div class="panel-head" style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div class="mark">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+            <circle cx="13" cy="13" r="11.2" stroke="#D97757" stroke-width="1.1" opacity=".55"/>
+            <circle cx="13" cy="13" r="6.4" stroke="#F0A57E" stroke-width="1.1"/>
+            <circle cx="13" cy="13" r="1.9" fill="#D97757"/>
+            <path d="M13 .8v4.4M13 20.8v4.4M.8 13h4.4M20.8 13h4.4" stroke="#D97757" stroke-width="1.1" opacity=".7"/>
+          </svg>
+          <div class="wordmark">gokhan<em>.ai</em></div>
+        </div>
+        <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">
+          <span class="tag op" id="modelTag">bağlanıyor…</span>
+          <span class="tag op" id="usageTag" style="display:none"></span>
+        </div>
+      </div>
+
+      <div class="chatgrid">
+        <aside class="side">
+          <button class="btn primary newbtn" id="newChat">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span class="lbl">Yeni sohbet</span>
+          </button>
+          <div class="convs" id="convs"></div>
+          <div class="sidefoot">
+            <div class="sidelink" id="toPanel" style="display:none">Giriş kayıtları</div>
+            <div class="sidelink" id="delConv">Bu sohbeti sil</div>
+          </div>
+        </aside>
+
+        <div class="chatmain">
+          <div class="thread" id="thread"></div>
+          <div class="files" id="files"></div>
+          <div class="composer">
+            <div class="cbox">
+              <button class="iconbtn" id="attach" title="Dosya ekle" aria-label="Dosya ekle">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M10.5 5L5.8 9.7a1.7 1.7 0 002.4 2.4l5-5a3.1 3.1 0 00-4.4-4.4l-5 5a4.5 4.5 0 006.4 6.4L14 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              </button>
+              <input type="file" id="fileInput" multiple style="display:none" accept=".xlsx,.xlsm,.xls,.csv,.tsv,.pdf,.docx,.txt,.md,.json">
+              <textarea id="prompt" rows="1" placeholder="Bir iş ver ya da soru sor — Excel, PDF, Word dosyası ekleyebilirsin…"></textarea>
+              <button class="iconbtn send" id="send" title="Gönder" aria-label="Gönder">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 13V3M3.5 7.5L8 3l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+            <div class="chint">
+              <span>Enter gönderir · Shift+Enter alt satır</span>
+              <span id="secureWrap" style="display:none">
+                <label class="check" style="display:inline-flex">
+                  <input type="checkbox" id="secure"><span class="box"></span>Gizli mod
+                </label>
+              </span>
+              <span>xlsx · csv · pdf · docx — en fazla 25 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="footer">
+    <span class="pulse"><i></i>bağlantı güvenli</span>
+    <span class="dim" id="stat"></span>
+    <span>gokhan.ai</span>
+  </div>
+</div>
+
+<script src="/rain.js"></script>
+<script src="/app.js"></script>
+<script src="/md.js"></script>
+<script>
+(function(){
+  var E = NP.esc, me = null, convId = null, busy = false, pending = [], info = null;
+  var thread = document.getElementById('thread'), promptEl = document.getElementById('prompt');
+  var filesBox = document.getElementById('files'), fileInput = document.getElementById('fileInput');
+
+  if (window.rainSet) window.rainSet(0.5);
+  NP.clock('clock');
+
+  // dar ekranda kısa yer tutucu — uzun metin kutuya sığmıyor
+  if (window.matchMedia('(max-width:760px)').matches) {
+    promptEl.placeholder = 'Bir iş ver ya da dosya ekle…';
+  }
+
+  NP.guard({}).then(async function(u){
+    if (!u) return;
+    me = u;
+    document.getElementById('whoami').textContent = u.username + (u.role === 'admin' ? ' · yönetici' : '');
+    if (u.role === 'admin') {
+      document.getElementById('panelLink').style.display = '';
+      document.getElementById('toPanel').style.display = '';
+    }
+    await loadInfo();
+    await loadConvs();
+    showEmpty();
+  });
+
+  document.getElementById('out').addEventListener('click', async function(e){
+    e.preventDefault(); await NP.post('/api/logout'); location.href = '/';
+  });
+  document.getElementById('toPanel').addEventListener('click', function(){ location.href = '/panel.html'; });
+
+  /* ── durum ────────────────────────────────────────── */
+  async function loadInfo(){
+    var r = await NP.get('/api/ai/info');
+    if (!r.ok) return;
+    info = r.data;
+    var s = info.saglayici.standart;
+    var tag = document.getElementById('modelTag');
+    tag.textContent = s.ad + (s.model ? ' · ' + s.model : '');
+    tag.className = 'tag ' + (info.saglayici.hazir ? (s.ucretsiz ? 'ok' : 'admin') : 'lock');
+    tag.title = s.not || '';
+    if (info.saglayici.gizli) document.getElementById('secureWrap').style.display = '';
+    drawUsage();
+  }
+  function drawUsage(){
+    if (!info) return;
+    var k = info.kullanim, t = document.getElementById('usageTag');
+    t.style.display = '';
+    t.textContent = 'bu ay ' + k.ayIstek + ' istek · ' + (k.ayToken/1000).toFixed(0) + 'K token';
+    t.className = 'tag ' + (k.kalanYuzde < 10 ? 'bad' : 'op');
+  }
+
+  /* ── konuşmalar ───────────────────────────────────── */
+  async function loadConvs(){
+    var r = await NP.get('/api/conversations');
+    if (!r.ok) return;
+    var box = document.getElementById('convs');
+    box.innerHTML = r.data.conversations.map(function(c){
+      return '<div class="conv' + (c.id === convId ? ' on' : '') + '" data-id="' + c.id + '">' +
+        E(c.title) + '<small>' + NP.ago(c.updated_at) + ' · ' + c.mesaj + ' mesaj</small></div>';
+    }).join('') || '<div class="dim" style="font-family:var(--mono);font-size:11px;padding:8px 2px">Henüz sohbet yok.</div>';
+  }
+  document.getElementById('convs').addEventListener('click', function(e){
+    var c = e.target.closest('.conv'); if (!c) return;
+    openConv(c.dataset.id);
+  });
+
+  async function openConv(id){
+    var r = await NP.get('/api/conversations/' + id);
+    if (!r.ok) return;
+    convId = id;
+    document.getElementById('secure').checked = !!r.data.conversation.secure;
+    thread.innerHTML = r.data.messages.map(function(m){
+      return m.role === 'user' ? userHtml(m.content) : aiHtml(MD.render(m.content));
+    }).join('');
+    thread.scrollTop = thread.scrollHeight;
+    loadConvs();
+  }
+
+  document.getElementById('newChat').addEventListener('click', function(){
+    convId = null; pending = []; drawFiles(); showEmpty(); loadConvs(); promptEl.focus();
+  });
+
+  document.getElementById('delConv').addEventListener('click', async function(){
+    if (!convId) return;
+    if (!confirm('Bu sohbet ve içindeki dosyalar silinsin mi?')) return;
+    await NP.del('/api/conversations/' + convId);
+    convId = null; showEmpty(); loadConvs();
+  });
+
+  /* ── görünüm parçaları ────────────────────────────── */
+  function userHtml(text){
+    var lines = String(text).split('\n');
+    var head = '';
+    if (lines[0].indexOf('📎') === 0){
+      head = '<div class="files" style="padding:0 0 8px">' +
+        lines.shift().replace('📎','').split(',').map(function(n){
+          return '<span class="chip">' + fileIcon(n.trim()) + E(n.trim()) + '</span>'}).join('') + '</div>';
+    }
+    return '<div class="msg-u">' + head + E(lines.join('\n')).replace(/\n/g,'<br>') + '</div>';
+  }
+  function aiHtml(inner){
+    return '<div class="msg-a"><div class="by">' +
+      '<svg width="13" height="13" viewBox="0 0 26 26" fill="none"><circle cx="13" cy="13" r="11" stroke="#D97757" stroke-width="1.6" opacity=".5"/><circle cx="13" cy="13" r="4" fill="#D97757"/></svg>' +
+      'gokhan.ai</div><div class="body">' + inner + '</div></div>';
+  }
+  function fileIcon(name){
+    var c = /\.(xlsx|xls|csv|tsv)$/i.test(name) ? '#8FB58C' : /\.pdf$/i.test(name) ? '#E08A76' : '#9C9184';
+    return '<svg class="ic" viewBox="0 0 16 16" fill="none"><rect x="2" y="1.5" width="12" height="13" rx="1.5" stroke="'+c+'" stroke-width="1.2"/><path d="M4.5 5.5h7M4.5 8h7M4.5 10.5h4" stroke="'+c+'" stroke-width="1.2" stroke-linecap="round"/></svg>';
+  }
+  function showEmpty(){
+    thread.innerHTML =
+      '<div class="empty"><h3>Bugün ne yapalım?</h3>' +
+      '<p>Bir dosya yükle ya da doğrudan bir iş ver. Excel ve PDF içeriğini okuyup üzerinde çalışabilirim.</p>' +
+      '<div class="sugg">' +
+      '<button data-s="Yüklediğim tabloyu bölgeye göre özetle, düşen kalemleri işaretle."><b>Tabloyu özetle</b>Excel/CSV yükle, kırılımları ve sapmaları çıkarayım</button>' +
+      '<button data-s="Yüklediğim sözleşmedeki riskli maddeleri ve önemli tarihleri listele."><b>Sözleşme oku</b>PDF yükle, riskli maddeleri ve tarihleri listeleyeyim</button>' +
+      '<button data-s="Bu verilerden sunulabilir bir aylık rapor taslağı yaz."><b>Rapor yaz</b>Verilerden sunulabilir bir taslak hazırlayayım</button>' +
+      '<button data-s="Bu tablodaki sayıları karşılaştırmalı biçimde yorumla."><b>Yorumla</b>Sayıların ne anlama geldiğini açıklayayım</button>' +
+      '</div></div>';
+  }
+  thread.addEventListener('click', function(e){
+    var b = e.target.closest('[data-s]'); if (!b) return;
+    promptEl.value = b.dataset.s; promptEl.focus();
+    promptEl.dispatchEvent(new Event('input'));
+  });
+
+  /* ── dosyalar ─────────────────────────────────────── */
+  function kb(n){ return n<1024 ? n+' B' : n<1048576 ? (n/1024).toFixed(0)+' KB' : (n/1048576).toFixed(1)+' MB'; }
+  function drawFiles(){
+    filesBox.innerHTML = pending.map(function(f,i){
+      return '<span class="chip">' + fileIcon(f.name) + E(f.name) +
+        ' <span class="sz">' + kb(f.bytes) + ' · ~' + f.approxTokens + ' token</span>' +
+        ' <span class="x" data-rm="' + i + '">×</span></span>';
+    }).join('');
+  }
+  filesBox.addEventListener('click', function(e){
+    var x = e.target.closest('[data-rm]'); if (!x) return;
+    pending.splice(+x.dataset.rm, 1); drawFiles();
+  });
+  document.getElementById('attach').addEventListener('click', function(){ fileInput.click(); });
+
+  fileInput.addEventListener('change', async function(){
+    if (!this.files.length) return;
+    var fd = new FormData();
+    for (var i = 0; i < this.files.length; i++) fd.append('files', this.files[i]);
+    if (convId) fd.append('conversationId', convId);
+    this.value = '';
+    document.getElementById('stat').textContent = 'dosya okunuyor…';
+    try {
+      var res = await fetch('/api/uploads', { method:'POST', headers:{'X-GA-Request':'1'},
+                                              credentials:'same-origin', body: fd });
+      var d = await res.json();
+      if (!res.ok) { document.getElementById('stat').textContent = d.error || 'Yüklenemedi.'; return; }
+      d.files.forEach(function(f){ f.error ? alert(f.name + ': ' + f.error) : pending.push(f); });
+      drawFiles();
+      document.getElementById('stat').textContent = '';
+    } catch(e){ document.getElementById('stat').textContent = 'Dosya yüklenemedi.'; }
+  });
+
+  /* ── gönder ───────────────────────────────────────── */
+  promptEl.addEventListener('input', function(){
+    this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 130) + 'px';
+  });
+  promptEl.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  });
+  document.getElementById('send').addEventListener('click', send);
+
+  async function send(){
+    if (busy) return;
+    var text = promptEl.value.trim();
+    if (!text && !pending.length) return;
+
+    if (thread.querySelector('.empty')) thread.innerHTML = '';
+    thread.insertAdjacentHTML('beforeend', userHtml(
+      (pending.length ? '📎' + pending.map(function(f){return f.name}).join(', ') + '\n' : '') + (text || '(dosya gönderildi)')));
+
+    var holder = document.createElement('div');
+    holder.innerHTML = aiHtml('<span class="cursor"></span>');
+    var node = holder.firstChild;
+    thread.appendChild(node);
+    var body = node.querySelector('.body');
+    thread.scrollTop = thread.scrollHeight;
+
+    // ilk kelime gelene kadar ne olduğunu göster
+    var t0 = Date.now(), thinking = setInterval(function(){
+      var s = Math.round((Date.now() - t0) / 1000);
+      body.innerHTML = '<span class="thinking">düşünüyor… ' + s + ' sn</span>';
+    }, 250);
+    var firstToken = true;
+
+    busy = true;
+    promptEl.value = ''; promptEl.style.height = 'auto';
+    var ids = pending.map(function(f){ return f.id });
+    pending = []; drawFiles();
+    if (window.rainSet) window.rainSet(1.5);
+
+    var acc = '';
+    try {
+      var res = await fetch('/api/chat', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-GA-Request':'1'},
+        credentials:'same-origin',
+        body: JSON.stringify({ conversationId: convId, text: text, attachmentIds: ids,
+                               secure: document.getElementById('secure').checked })
+      });
+
+      if (!res.ok || !res.body) {
+        var err = await res.json().catch(function(){ return {} });
+        body.innerHTML = '<span class="err">' + E(err.error || 'Cevap alınamadı.') + '</span>';
+        busy = false; if (window.rainSet) window.rainSet(0.5); return;
+      }
+
+      var reader = res.body.getReader(), dec = new TextDecoder(), buf = '';
+      while (true) {
+        var chunk = await reader.read();
+        if (chunk.done) break;
+        buf += dec.decode(chunk.value, { stream:true });
+        var parts = buf.split('\n\n'); buf = parts.pop();
+        for (var i = 0; i < parts.length; i++) {
+          var line = parts[i].trim();
+          if (line.indexOf('data:') !== 0) continue;
+          var ev; try { ev = JSON.parse(line.slice(5)); } catch(e){ continue }
+          if (ev.type === 'start') convId = ev.conversationId;
+          else if (ev.type === 'delta') {
+            if (firstToken) { clearInterval(thinking); firstToken = false; }
+            acc += ev.text;
+            body.innerHTML = MD.render(acc) + '<span class="cursor"></span>';
+            thread.scrollTop = thread.scrollHeight;
+          } else if (ev.type === 'error') {
+            clearInterval(thinking);
+            body.innerHTML = '<span class="err">' + E(ev.error) + '</span>';
+          } else if (ev.type === 'done') {
+            clearInterval(thinking);
+            body.innerHTML = MD.render(acc);
+            document.getElementById('stat').textContent =
+              ev.model + ' · ' + (ev.usage.in + ev.usage.out) + ' token';
+            await loadInfo();
+          }
+        }
+      }
+      if (acc) body.innerHTML = MD.render(acc);
+    } catch(e){
+      clearInterval(thinking);
+      body.innerHTML = '<span class="err">Bağlantı kesildi.</span>';
+    }
+    clearInterval(thinking);
+
+    busy = false;
+    if (window.rainSet) window.rainSet(0.5);
+    thread.scrollTop = thread.scrollHeight;
+    loadConvs();
+  }
+})();
+</script>
+</body>
+</html>
