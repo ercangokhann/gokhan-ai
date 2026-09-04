@@ -39,7 +39,6 @@
           <div class="wordmark">gokhan<em>.ai</em></div>
         </div>
         <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">
-          <span class="tag op" id="modelTag">bağlanıyor…</span>
           <span class="tag op" id="usageTag" style="display:none"></span>
         </div>
       </div>
@@ -133,11 +132,7 @@
     var r = await NP.get('/api/ai/info');
     if (!r.ok) return;
     info = r.data;
-    var s = info.saglayici.standart;
-    var tag = document.getElementById('modelTag');
-    tag.textContent = s.ad + (s.model ? ' · ' + s.model : '');
-    tag.className = 'tag ' + (info.saglayici.hazir ? (s.ucretsiz ? 'ok' : 'admin') : 'lock');
-    tag.title = s.not || '';
+    // sağlayıcı bilgisi yalnızca yönetici panelinde görünür
     if (info.saglayici.gizli) document.getElementById('secureWrap').style.display = '';
     drawUsage();
   }
@@ -334,7 +329,7 @@
             clearInterval(thinking);
             body.innerHTML = MD.render(acc);
             document.getElementById('stat').textContent =
-              ev.model + ' · ' + (ev.usage.in + ev.usage.out) + ' token';
+              (ev.usage.in + ev.usage.out) + ' token';
             await loadInfo();
           }
         }

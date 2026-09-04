@@ -376,12 +376,33 @@ async function sweep() {
   } catch {}
 }
 
+
+/* ── uyanık tutma ─────────────────────────────────────
+   Render ücretsiz planda 15 dakika dış trafik gelmezse servisi uyutuyor ve
+   uyanması ~1 dakika sürüyor. Mesai saatlerinde kendi genel adresimize istek
+   atıp uyanık kalıyoruz; geceleri uyumasına izin veriyoruz ki ücretsiz plandaki
+   aylık çalışma saati kotası dolmasın (750 saat).                            */
+const SELF_URL   = process.env.RENDER_EXTERNAL_URL || process.env.SELF_URL || '';
+const AWAKE_FROM = Number(process.env.AWAKE_FROM_UTC ?? 4);   // 07:00 Türkiye
+const AWAKE_TO   = Number(process.env.AWAKE_TO_UTC ?? 18);    // 21:00 Türkiye
+
+function keepAwake() {
+  if (!SELF_URL) return;
+  setInterval(() => {
+    const h = new Date().getUTCHours();
+    if (h < AWAKE_FROM || h >= AWAKE_TO) return;
+    fetch(SELF_URL + '/healthz').catch(() => {});
+  }, 10 * 60 * 1000);
+  console.log(`[boot] uyanık tutma açık · ${SELF_URL} · UTC ${AWAKE_FROM}:00-${AWAKE_TO}:00`);
+}
+
 const PORT = process.env.PORT || 3000;
 migrate()
   .then(migrateChat)
   .then(bootstrapAdmin)
   .then(() => {
     setInterval(sweep, 30 * 60 * 1000);
+    keepAwake();
     app.listen(PORT, () => console.log(`[boot] gokhan.ai dinlemede :${PORT} (min şifre ${PASSWORD_MIN})`));
   })
   .catch((e) => { console.error('[boot] başarısız:', e); process.exit(1); });
