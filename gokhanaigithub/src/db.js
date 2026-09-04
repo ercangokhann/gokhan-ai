@@ -70,6 +70,37 @@ export async function migrate() {
   await q(`ALTER TABLE audit ADD COLUMN IF NOT EXISTS ua text`);
   await q(`ALTER TABLE audit ADD COLUMN IF NOT EXISTS ok boolean`);
 
+  // cihaz kimliği: tarayıcıya yazılan kalıcı rastgele kimlik + pasif parmak izi özeti
+  await q(`ALTER TABLE audit ADD COLUMN IF NOT EXISTS device_id text`);
+  await q(`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS device_id text`);
+
+  await q(`
+    CREATE TABLE IF NOT EXISTS devices (
+      id          bigserial PRIMARY KEY,
+      user_id     uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      device_id   text NOT NULL,
+      label       text,
+      first_ip    text,
+      last_ip     text,
+      first_seen  timestamptz NOT NULL DEFAULT now(),
+      last_seen   timestamptz NOT NULL DEFAULT now(),
+      logins      integer NOT NULL DEFAULT 1,
+      UNIQUE (user_id, device_id)
+    )`);
+
+  // KVKK aydınlatma onayı — kim, ne zaman, hangi sürümü onayladı
+  await q(`
+    CREATE TABLE IF NOT EXISTS consents (
+      id          bigserial PRIMARY KEY,
+      user_id     uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      version     text NOT NULL,
+      accepted_at timestamptz NOT NULL DEFAULT now(),
+      ip          text,
+      ua          text,
+      device_id   text
+    )`);
+  await q(`CREATE INDEX IF NOT EXISTS consent_user_idx ON consents (user_id, accepted_at DESC)`);
+
   await q(`CREATE INDEX IF NOT EXISTS audit_at_idx ON audit (at DESC)`);
   await q(`CREATE INDEX IF NOT EXISTS audit_action_idx ON audit (action)`);
   await q(`CREATE INDEX IF NOT EXISTS sessions_exp_idx ON sessions (expires_at)`);
@@ -82,11 +113,11 @@ export async function migrate() {
 export async function audit(e) {
   try {
     await q(
-      `INSERT INTO audit (actor, actor_name, actor_email, action, detail, ip, ua, ok)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      `INSERT INTO audit (actor, actor_name, actor_email, action, detail, ip, ua, ok, device_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
       [e.actor || null, e.name || null, e.email || null, e.action,
        e.detail || null, e.ip || null, (e.ua || '').slice(0, 250) || null,
-       typeof e.ok === 'boolean' ? e.ok : null]);
+       typeof e.ok === 'boolean' ? e.ok : null, e.device || null]);
   } catch (err) {
     console.error('[audit]', err.message);
   }

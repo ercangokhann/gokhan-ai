@@ -47,6 +47,7 @@
           <button class="btn" data-tab="users">Kullanıcılar</button>
           <button class="btn" data-tab="live">Açık oturumlar</button>
           <button class="btn" data-tab="usage">Yapay zeka kullanımı</button>
+          <button class="btn" data-tab="kvkk">Cihazlar ve onaylar</button>
         </div>
       </div>
 
@@ -109,6 +110,19 @@
         <div id="usageWrap" style="margin-top:14px"></div>
       </section>
 
+      <!-- CİHAZLAR VE KVKK ONAYLARI -->
+      <section class="pad" id="tab-kvkk" style="display:none">
+        <h2>Aydınlatma metni onayları</h2>
+        <div id="consentWrap"></div>
+        <h2 style="margin-top:26px">Tanınan cihazlar</h2>
+        <div class="note" style="margin-bottom:14px">
+          MAC adresi internet üzerinden görülemez. Bunun yerine her tarayıcıya bir kez kalıcı
+          cihaz kimliği yazılıyor; aynı kişi yeni bir cihazdan girerse kayıtlarda
+          <span class="tag lock">yeni cihaz</span> olarak işaretleniyor.
+        </div>
+        <div id="devWrap"></div>
+      </section>
+
       <!-- AÇIK OTURUMLAR -->
       <section class="pad" id="tab-live" style="display:none">
         <h2>Şu an açık oturumlar</h2>
@@ -168,7 +182,7 @@
 
   /* ── sekmeler ─────────────────────────────────────── */
   function show(name){
-    ['log','users','live','usage'].forEach(function(t){
+    ['log','users','live','usage','kvkk'].forEach(function(t){
       document.getElementById('tab-' + t).style.display = (t === name ? '' : 'none');
     });
     document.querySelectorAll('#tabs .btn').forEach(function(b){
@@ -176,6 +190,7 @@
     });
     if (name === 'live') loadLive();
     if (name === 'usage') loadUsage();
+    if (name === 'kvkk') loadKvkk();
   }
   document.querySelectorAll('#tabs .btn').forEach(function(b){
     b.addEventListener('click', function(){ show(b.dataset.tab); });
@@ -184,6 +199,9 @@
   /* ── giriş kayıtları ──────────────────────────────── */
   var LABEL = {
     'login.ok': ['Giriş başarılı', 'ok'],
+    'login.newdevice': ['Yeni cihazdan giriş', 'v'],
+    'consent.accept': ['Aydınlatma metni onaylandı', 'v'],
+    'file.upload': ['Dosya yüklendi', 'v'],
     'login.fail': ['Başarısız deneme', 'er'],
     'login.locked': ['Kilitli hesap denemesi', 'er'],
     'login.blocked': ['Devre dışı hesap denemesi', 'er'],
@@ -219,7 +237,8 @@
           '<td>' + E(e.actor_email || '—') + '</td>' +
           '<td>' + E(e.actor || '—') + '</td>' +
           '<td>' + E(e.ip || '—') + '</td>' +
-          '<td class="hide-s dim">' + E(NP.device(e.ua)) + '</td>' +
+          '<td class="hide-s dim">' + E(NP.device(e.ua)) +
+            (e.device_id ? '<div style="font-size:9.5px">' + E(e.device_id.slice(0,10)) + '</div>' : '') + '</td>' +
           '<td><span class="' + (L[1] === 'ok' ? 'tag ok' : L[1] === 'er' ? 'tag bad' : L[1] === 'v' ? 'tag info' : 'tag op') + '">' + E(L[0]) + '</span>' +
             (e.detail ? '<div class="dim" style="font-size:10.5px;margin-top:3px">' + E(e.detail) + '</div>' : '') +
           '</td></tr>';
@@ -359,6 +378,46 @@
       }).join('') + '</tbody></table>';
   }
   document.getElementById('refreshLive').addEventListener('click', loadLive);
+
+  /* ── cihazlar ve KVKK onayları ────────────────────── */
+  async function loadKvkk(){
+    var c = await NP.get('/api/consents');
+    if (c.ok) {
+      var d = c.data;
+      document.getElementById('consentWrap').innerHTML =
+        '<div class="dim" style="font-family:var(--mono);font-size:11px;margin-bottom:10px">' +
+        'yürürlükteki sürüm: ' + E(d.surum) + '</div>' +
+        '<table><thead><tr><th>Kullanıcı</th><th>E-posta</th><th>Durum</th>' +
+        '<th>Onay zamanı</th><th class="hide-s">IP</th></tr></thead><tbody>' +
+        d.rows.map(function(r){
+          var guncel = r.version === d.surum;
+          return '<tr><td>' + E(r.display_name || r.username) +
+            '<div class="dim" style="font-size:10.5px">' + E(r.username) + '</div></td>' +
+            '<td>' + E(r.email || '—') + '</td>' +
+            '<td><span class="tag ' + (guncel ? 'ok' : r.version ? 'lock' : 'bad') + '">' +
+              (guncel ? 'onaylı' : r.version ? 'eski sürüm: ' + E(r.version) : 'onaylamadı') + '</span></td>' +
+            '<td class="dim">' + (r.accepted_at ? NP.stamp(r.accepted_at) : '—') + '</td>' +
+            '<td class="hide-s dim">' + E(r.ip || '—') + '</td></tr>';
+        }).join('') + '</tbody></table>';
+    }
+    var v = await NP.get('/api/devices');
+    if (!v.ok) return;
+    var list = v.data.devices;
+    document.getElementById('devWrap').innerHTML = list.length ?
+      '<table><thead><tr><th>Kullanıcı</th><th>Cihaz kimliği</th><th class="hide-s">Cihaz</th>' +
+      '<th>Son IP</th><th>Giriş</th><th>İlk görülme</th><th>Son görülme</th></tr></thead><tbody>' +
+      list.map(function(x){
+        return '<tr><td>' + E(x.display_name || x.username) +
+          '<div class="dim" style="font-size:10.5px">' + E(x.email || '') + '</div></td>' +
+          '<td style="font-size:11px">' + E(x.device_id) + '</td>' +
+          '<td class="hide-s dim">' + E(NP.device(x.label)) + '</td>' +
+          '<td>' + E(x.last_ip || '—') + '</td>' +
+          '<td>' + x.logins + '</td>' +
+          '<td class="dim">' + NP.stamp(x.first_seen) + '</td>' +
+          '<td class="dim">' + NP.ago(x.last_seen) + '</td></tr>';
+      }).join('') + '</tbody></table>'
+      : '<div class="empty">Henüz cihaz kaydı yok.</div>';
+  }
 
   /* ── yapay zeka kullanımı ─────────────────────────── */
   async function loadUsage(){

@@ -1,6 +1,30 @@
 /* Ortak yardımcılar */
 window.NP = (function () {
-  var H = { 'Content-Type': 'application/json', 'X-GA-Request': '1' };
+
+  /* Cihaz kimliği.
+     MAC adresi internetten görülemez; onun yerine bu tarayıcıya bir kez rastgele
+     kimlik yazıp her istekte gönderiyoruz. Kullanıcı tarayıcı verisini silerse
+     yeni kimlik üretilir ve panelde "yeni cihaz" olarak görünür. */
+  function deviceId() {
+    var k = 'ga_device', v = null;
+    try { v = localStorage.getItem(k); } catch (e) {}
+    if (!v) {
+      var b = new Uint8Array(9);
+      (window.crypto || window.msCrypto).getRandomValues(b);
+      v = Array.prototype.map.call(b, function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+      try {
+        var fp = [screen.width, screen.height, new Date().getTimezoneOffset(),
+                  (navigator.platform || '')].join('|');
+        var h = 0;
+        for (var i = 0; i < fp.length; i++) { h = ((h << 5) - h + fp.charCodeAt(i)) | 0; }
+        v += '-' + (h >>> 0).toString(36);
+      } catch (e) {}
+      try { localStorage.setItem(k, v); } catch (e) {}
+    }
+    return v;
+  }
+
+  var H = { 'Content-Type': 'application/json', 'X-GA-Request': '1', 'X-GA-Device': deviceId() };
 
   async function call(method, url, body) {
     try {
@@ -107,6 +131,11 @@ window.NP = (function () {
     if (!r.ok) { location.href = '/'; return null; }
     var u = r.data.user;
     if (u.mustChange && !opts.allowMustChange) { location.href = '/change.html'; return null; }
+    // KVKK aydınlatma metni onaylanmadan hiçbir ekran açılmaz
+    if (r.data.onay && r.data.onay.gerekli && !opts.allowConsent) {
+      location.href = '/onay.html'; return null;
+    }
+    u._onay = r.data.onay || null;
     if (opts.adminOnly && u.role !== 'admin') { location.href = '/chat.html'; return null; }
     return u;
   }
@@ -118,6 +147,6 @@ window.NP = (function () {
     del: function (u) { return call('DELETE', u); },
     esc: esc, stamp: stamp, ago: ago, device: device, hhmmss: hhmmss,
     say: say, clock: clock, capsWatch: capsWatch, revealToggle: revealToggle,
-    rainOnType: rainOnType, guard: guard
+    rainOnType: rainOnType, guard: guard, deviceId: deviceId
   };
 })();

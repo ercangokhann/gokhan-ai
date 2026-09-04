@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>gokhan.ai — Aydınlatma metni</title>
+<link rel="stylesheet" href="/theme.css">
+<style>
+  .doc{padding:22px 26px;max-height:min(58vh,540px);overflow-y:auto;font-size:14px;line-height:1.7;color:var(--cream)}
+  .doc h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);margin:22px 0 8px;font-weight:400}
+  .doc h3:first-child{margin-top:0}
+  .doc p{margin:0 0 10px}
+  .doc ul{margin:0 0 10px;padding-left:19px}
+  .doc li{margin-bottom:5px}
+  .doc strong{color:#fff;font-weight:500}
+  .doc .uyari{background:rgba(216,162,74,.1);border:1px solid rgba(216,162,74,.32);border-radius:3px;
+    padding:12px 14px;color:#E8D3A8;font-size:13px;margin:0 0 14px}
+  .doc table{margin:4px 0 12px;font-size:12px}
+  .foot{border-top:1px dashed var(--hairline-2);padding:16px 26px 18px;display:flex;
+    align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .surum{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-dim)}
+</style>
+</head>
+<body class="app">
+
+<canvas id="rain" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+<div class="scan" aria-hidden="true"></div>
+
+<div class="shell">
+  <div class="topbar">
+    <span>gokhan.ai&nbsp;/&nbsp;aydınlatma metni</span>
+    <span class="right">
+      <span id="whoami"></span>
+      <a href="#" id="out">çıkış</a>
+      <span id="clock">--:--:--</span>
+    </span>
+  </div>
+
+  <div class="stage wide">
+    <main class="panel wide" style="width:min(760px,100%)">
+      <div class="panel-head">
+        <div class="mark">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+            <circle cx="13" cy="13" r="11.2" stroke="#D97757" stroke-width="1.1" opacity=".55"/>
+            <circle cx="13" cy="13" r="6.4" stroke="#F0A57E" stroke-width="1.1"/>
+            <circle cx="13" cy="13" r="1.9" fill="#D97757"/>
+            <path d="M13 .8v4.4M13 20.8v4.4M.8 13h4.4M20.8 13h4.4" stroke="#D97757" stroke-width="1.1" opacity=".7"/>
+          </svg>
+          <div class="wordmark">gokhan<em>.ai</em></div>
+        </div>
+        <div class="tagline">kişisel verilerin korunması<span class="dot">·</span>aydınlatma metni</div>
+      </div>
+
+      <div class="doc">
+        <div class="uyari">
+          <strong>Taslak metin.</strong> Bu metin sistemin gerçekte hangi veriyi topladığına göre yazıldı,
+          ancak hukuki denetimden geçmedi. Yayına almadan önce bir KVKK danışmanına veya avukata
+          kontrol ettirin.
+        </div>
+
+        <h3>Veri sorumlusu</h3>
+        <p>Bu uygulamayı işleten ve kişisel verilerinizi işleyen kişi <strong>Ercan Gökhan</strong>'dır.
+        Başvuru ve talepleriniz için: <strong>ercangokhann@hotmail.com</strong></p>
+
+        <h3>Hangi verileriniz işleniyor</h3>
+        <ul>
+          <li><strong>Kimlik ve iletişim:</strong> ad soyad, kullanıcı adı, e-posta adresi</li>
+          <li><strong>Erişim güvenliği:</strong> IP adresiniz, tarayıcı ve işletim sistemi bilgisi,
+              tarayıcınıza yazılan cihaz kimliği, giriş ve çıkış zamanları, başarısız giriş denemeleri</li>
+          <li><strong>İçerik:</strong> yüklediğiniz dosyaların içeriği ve yapay zekaya yazdığınız mesajlar</li>
+          <li>Şifreniz <strong>geri döndürülemez biçimde şifrelenerek</strong> saklanır; hiç kimse,
+              yöneticiler dahil, şifrenizi göremez</li>
+        </ul>
+        <p>MAC adresiniz, konumunuz veya rehberiniz gibi veriler <strong>işlenmez</strong>.</p>
+
+        <h3>Neden işleniyor</h3>
+        <ul>
+          <li>Hesabınızı oluşturmak ve hizmeti sunmak</li>
+          <li>Yetkisiz erişimi önlemek, hesabınızı korumak, kötüye kullanımı tespit etmek</li>
+          <li>Yüklediğiniz belgeler üzerinde talep ettiğiniz işlemi yapmak</li>
+        </ul>
+
+        <h3>Yurt dışına aktarım</h3>
+        <p>Sistem yurt dışındaki hizmet sağlayıcılar üzerinde çalışıyor; verileriniz
+        <strong>Türkiye dışında işleniyor</strong>:</p>
+        <table><thead><tr><th>Hizmet</th><th>Nerede</th><th>Ne aktarılıyor</th></tr></thead>
+        <tbody>
+          <tr><td>Render</td><td>ABD (Ohio)</td><td>Uygulamanın çalıştığı sunucu</td></tr>
+          <tr><td>Neon</td><td>ABD (Ohio)</td><td>Veritabanı — hesap ve kayıt bilgileri</td></tr>
+          <tr><td>Google (Gemini)</td><td>Yurt dışı</td><td>Yapay zekaya gönderdiğiniz mesaj ve dosya içeriği</td></tr>
+        </tbody></table>
+        <p>Google'ın <strong>ücretsiz katmanı</strong> kullanıldığı için, yapay zekaya gönderdiğiniz
+        içerik Google tarafından ürünlerini geliştirmek amacıyla kullanılabilir ve incelenebilir.
+        Bu nedenle <strong>gizli kalması gereken belgeleri sisteme yüklemeyin.</strong></p>
+
+        <h3>Ne kadar süre saklanıyor</h3>
+        <ul>
+          <li><strong>Giriş kayıtları:</strong> 180 gün, sonra otomatik silinir</li>
+          <li><strong>Sohbetler ve yüklenen dosyalar:</strong> siz silene kadar</li>
+          <li><strong>Hesap bilgileri:</strong> hesabınız açık olduğu sürece</li>
+        </ul>
+
+        <h3>Haklarınız</h3>
+        <p>KVKK'nın 11. maddesi uyarınca; verilerinizin işlenip işlenmediğini öğrenme, bilgi talep etme,
+        işlenme amacını öğrenme, yanlışsa düzeltilmesini, şartları oluşmuşsa silinmesini isteme ve
+        işlemeye itiraz etme haklarına sahipsiniz. Talebinizi yukarıdaki e-posta adresine iletebilirsiniz;
+        en geç <strong>30 gün</strong> içinde yanıtlanır.</p>
+
+        <h3>Onayınız</h3>
+        <p>Aşağıdaki düğmeye bastığınızda bu metni okuduğunuz kaydedilir. Kayda onay tarihi,
+        IP adresiniz ve cihaz bilgisi de yazılır.</p>
+      </div>
+
+      <div class="foot">
+        <span class="surum" id="surum"></span>
+        <div class="acts" style="justify-content:flex-end">
+          <span class="msg" id="msg"></span>
+          <button class="btn primary" id="kabul">Okudum, onaylıyorum</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="footer">
+    <span class="pulse"><i></i>bağlantı güvenli</span>
+    <span class="dim" id="durum"></span>
+    <span>gokhan.ai</span>
+  </div>
+</div>
+
+<script src="/rain.js"></script>
+<script src="/app.js"></script>
+<script>
+(function(){
+  var me = null, surum = null;
+  if (window.rainSet) window.rainSet(0.45);
+  NP.clock('clock');
+
+  NP.guard({ allowConsent: true }).then(function(u){
+    if (!u) return;
+    me = u;
+    document.getElementById('whoami').textContent = u.username;
+    surum = u._onay ? u._onay.surum : null;
+    document.getElementById('surum').textContent = 'sürüm ' + (surum || '—');
+    if (u._onay && !u._onay.gerekli) {
+      document.getElementById('kabul').textContent = 'Panele dön';
+      document.getElementById('kabul').dataset.done = '1';
+      document.getElementById('durum').textContent = 'bu sürümü zaten onayladınız';
+    }
+  });
+
+  document.getElementById('out').addEventListener('click', async function(e){
+    e.preventDefault(); await NP.post('/api/logout'); location.href = '/';
+  });
+
+  document.getElementById('kabul').addEventListener('click', async function(){
+    var b = this, msg = document.getElementById('msg');
+    if (b.dataset.done) { location.href = '/chat.html'; return; }
+    b.disabled = true; msg.className = 'msg'; msg.textContent = 'kaydediliyor…';
+    var r = await NP.post('/api/consent', { version: surum });
+    if (r.ok) {
+      msg.className = 'msg ok'; msg.textContent = 'onaylandı';
+      setTimeout(function(){ location.href = '/chat.html'; }, 500);
+    } else {
+      b.disabled = false;
+      msg.className = 'msg err'; msg.textContent = r.data.error || 'Kaydedilemedi.';
+    }
+  });
+})();
+</script>
+</body>
+</html>

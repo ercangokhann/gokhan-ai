@@ -242,8 +242,9 @@
     this.value = '';
     document.getElementById('stat').textContent = 'dosya okunuyor…';
     try {
-      var res = await fetch('/api/uploads', { method:'POST', headers:{'X-GA-Request':'1'},
-                                              credentials:'same-origin', body: fd });
+      var res = await fetch('/api/uploads', {
+        method:'POST', headers:{'X-GA-Request':'1','X-GA-Device':NP.deviceId()},
+        credentials:'same-origin', body: fd });
       var d = await res.json();
       if (!res.ok) { document.getElementById('stat').textContent = d.error || 'Yüklenemedi.'; return; }
       d.files.forEach(function(f){ f.error ? alert(f.name + ': ' + f.error) : pending.push(f); });
@@ -294,7 +295,7 @@
     try {
       var res = await fetch('/api/chat', {
         method:'POST',
-        headers:{'Content-Type':'application/json','X-GA-Request':'1'},
+        headers:{'Content-Type':'application/json','X-GA-Request':'1','X-GA-Device':NP.deviceId()},
         credentials:'same-origin',
         body: JSON.stringify({ conversationId: convId, text: text, attachmentIds: ids,
                                secure: document.getElementById('secure').checked })

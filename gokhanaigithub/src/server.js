@@ -25,6 +25,12 @@ const LOCK_MINUTES = 15;
 
 const ipOf = (req) => (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.ip || '';
 const uaOf = (req) => String(req.headers['user-agent'] || '').slice(0, 250);
+/** Tarayıcıya yazılan kalıcı cihaz kimliği — MAC adresi internetten görülemez,
+    bunun yerine cihazı ayırt etmeye yarayan kendi ürettiğimiz kimliği kullanıyoruz. */
+const devOf = (req) => String(req.headers['x-ga-device'] || '').replace(/[^A-Za-z0-9_.-]/g, '').slice(0, 80) || null;
+
+/** Aydınlatma metni sürümü — metin değişince burayı artır, herkes yeniden onaylar. */
+const PRIVACY_VERSION = process.env.PRIVACY_VERSION || '2026-09-04';
 
 function readCookie(req, name) {
   const raw = req.headers.cookie || '';
@@ -99,7 +105,7 @@ function throttle(req, res, next) {
 
 const actorOf = (req) => ({
   actor: req.user.username, name: req.user.display_name, email: req.user.email,
-  ip: ipOf(req), ua: uaOf(req)
+  ip: ipOf(req), ua: uaOf(req), device: devOf(req)
 });
 
 app.use('/api', csrfGuard);
@@ -110,7 +116,7 @@ app.post('/api/login', throttle, async (req, res) => {
   const username = String(req.body?.username || '').trim().toLowerCase();
   const password = String(req.body?.password || '');
   const keep = !!req.body?.keep;
-  const ip = ipOf(req), ua = uaOf(req);
+  const ip = ipOf(req), ua = uaOf(req), device = devOf(req);
 
   if (!username || !password) return res.status(400).json({ error: 'Kullanıcı adı ve şifre gerekli.' });
 
@@ -121,11 +127,11 @@ app.post('/api/login', throttle, async (req, res) => {
 
   if (!u) {
     await verifyPassword(password, 'scrypt$16384$8$1$AAAAAAAAAAAAAAAAAAAAAA==$AAAA'); // sabit süre
-    await audit({ actor: username, action: 'login.fail', detail: 'bilinmeyen kullanıcı', ip, ua, ok: false });
+    await audit({ actor: username, action: 'login.fail', detail: 'bilinmeyen kullanıcı', ip, ua, device, ok: false });
     return res.status(401).json({ error: 'Kullanıcı adı veya şifre hatalı.' });
   }
 
-  const who = { actor: u.username, name: u.display_name, email: u.email, ip, ua };
+  const who = { actor: u.username, name: u.display_name, email: u.email, ip, ua, device };
 
   if (u.disabled) {
     await audit({ ...who, action: 'login.blocked', detail: 'hesap devre dışı', ok: false });
@@ -151,11 +157,23 @@ app.post('/api/login', throttle, async (req, res) => {
   const token = newSessionToken();
   const hours = keep ? 12 : 1;
   await q(
-    `INSERT INTO sessions (token_hash, user_id, expires_at, ip, ua)
-     VALUES ($1,$2, now() + ($3 || ' hours')::interval, $4, $5)`,
-    [hashToken(token), u.id, String(hours), ip, ua]);
+    `INSERT INTO sessions (token_hash, user_id, expires_at, ip, ua, device_id)
+     VALUES ($1,$2, now() + ($3 || ' hours')::interval, $4, $5, $6)`,
+    [hashToken(token), u.id, String(hours), ip, ua, device]);
   await q('UPDATE users SET failed_attempts=0, locked_until=NULL, last_login_at=now(), last_login_ip=$2 WHERE id=$1', [u.id, ip]);
-  await audit({ ...who, action: 'login.ok', detail: `oturum ${hours} saat`, ok: true });
+  // cihaz tanıma: daha önce görülmemiş cihazdan giriş ayrıca işaretlenir
+  let yeniCihaz = false;
+  if (device) {
+    const { rows: dev } = await q(
+      `INSERT INTO devices (user_id, device_id, label, first_ip, last_ip)
+       VALUES ($1,$2,$3,$4,$4)
+       ON CONFLICT (user_id, device_id)
+       DO UPDATE SET last_seen = now(), last_ip = EXCLUDED.last_ip, logins = devices.logins + 1
+       RETURNING logins`, [u.id, device, ua.slice(0, 120), ip]);
+    yeniCihaz = dev[0]?.logins === 1;
+  }
+  await audit({ ...who, action: yeniCihaz ? 'login.newdevice' : 'login.ok',
+                detail: (yeniCihaz ? 'YENİ CİHAZ · ' : '') + `oturum ${hours} saat`, ok: true });
 
   setSessionCookie(res, token, hours * 3600);
   res.json({ ok: true, user: publicUser(u) });
@@ -180,7 +198,42 @@ app.post('/api/logout', async (req, res) => {
 app.get('/api/me', async (req, res) => {
   const u = await currentUser(req);
   if (!u) return res.status(401).json({ error: 'Oturum yok.' });
-  res.json({ user: publicUser(u) });
+  const { rows } = await q(
+    'SELECT 1 FROM consents WHERE user_id=$1 AND version=$2 LIMIT 1', [u.id, PRIVACY_VERSION]);
+  res.json({ user: publicUser(u), onay: { gerekli: !rows[0], surum: PRIVACY_VERSION } });
+});
+
+/* ── KVKK aydınlatma onayı ────────────────────────────── */
+
+app.post('/api/consent', requireAuth, async (req, res) => {
+  if (String(req.body?.version || '') !== PRIVACY_VERSION) {
+    return res.status(400).json({ error: 'Aydınlatma metni güncellenmiş, sayfayı yenileyin.' });
+  }
+  await q(`INSERT INTO consents (user_id, version, ip, ua, device_id) VALUES ($1,$2,$3,$4,$5)`,
+    [req.user.id, PRIVACY_VERSION, ipOf(req), uaOf(req), devOf(req)]);
+  await audit({ ...actorOf(req), action: 'consent.accept', detail: 'sürüm ' + PRIVACY_VERSION, ok: true });
+  res.json({ ok: true });
+});
+
+app.get('/api/consents', requireAuth, requireAdmin, async (req, res) => {
+  const { rows } = await q(`
+    SELECT u.username, u.display_name, u.email,
+           c.version, c.accepted_at, c.ip, c.ua, c.device_id
+    FROM users u
+    LEFT JOIN LATERAL (
+      SELECT * FROM consents c2 WHERE c2.user_id = u.id ORDER BY accepted_at DESC LIMIT 1
+    ) c ON true
+    ORDER BY u.created_at ASC`);
+  res.json({ rows, surum: PRIVACY_VERSION });
+});
+
+app.get('/api/devices', requireAuth, requireAdmin, async (req, res) => {
+  const { rows } = await q(`
+    SELECT d.device_id, d.label, d.first_ip, d.last_ip, d.first_seen, d.last_seen, d.logins,
+           u.username, u.display_name, u.email
+    FROM devices d JOIN users u ON u.id = d.user_id
+    ORDER BY d.last_seen DESC LIMIT 200`);
+  res.json({ devices: rows });
 });
 
 /* ── kendi şifresini değiştirme ───────────────────────── */
@@ -316,7 +369,7 @@ app.get('/api/log', requireAuth, requireAdmin, async (req, res) => {
   }
   params.push(limit);
   const { rows } = await q(
-    `SELECT id, at, actor, actor_name, actor_email, action, detail, ip, ua, ok
+    `SELECT id, at, actor, actor_name, actor_email, action, detail, ip, ua, ok, device_id
      FROM audit ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
      ORDER BY at DESC LIMIT $${params.length}`, params);
   res.json({ events: rows });
@@ -324,13 +377,14 @@ app.get('/api/log', requireAuth, requireAdmin, async (req, res) => {
 
 app.get('/api/sessions', requireAuth, requireAdmin, async (req, res) => {
   const { rows } = await q(
-    `SELECT s.token_hash, s.created_at, s.expires_at, s.ip, s.ua,
+    `SELECT s.token_hash, s.created_at, s.expires_at, s.ip, s.ua, s.device_id,
             u.username, u.display_name, u.email
      FROM sessions s JOIN users u ON u.id = s.user_id
      WHERE s.expires_at > now() ORDER BY s.created_at DESC LIMIT 100`);
   res.json({ sessions: rows.map(r => ({
     id: r.token_hash.slice(0, 12), createdAt: r.created_at, expiresAt: r.expires_at,
-    ip: r.ip, ua: r.ua, username: r.username, displayName: r.display_name, email: r.email
+    ip: r.ip, ua: r.ua, deviceId: r.device_id,
+    username: r.username, displayName: r.display_name, email: r.email
   })) });
 });
 
