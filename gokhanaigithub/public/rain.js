@@ -27,7 +27,7 @@
     for (var i = 0; i < n; i++) {
       cols.push({ y: Math.random() * -60, sp: 0.18 + Math.random() * 0.42, char: pick(), bright: Math.random() < 0.14 });
     }
-    ctx.fillStyle = '#221C15'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#3B3128'; ctx.fillRect(0, 0, W, H);
     if (reduce) still();
   }
 
@@ -50,7 +50,7 @@
     last = ts;
     intensity += (target - intensity) * 0.06;
 
-    ctx.fillStyle = 'rgba(34,28,21,0.085)';
+    ctx.fillStyle = 'rgba(59,49,40,0.09)';
     ctx.fillRect(0, 0, W, H);
     ctx.font = fs + 'px "JetBrains Mono", monospace';
     ctx.textBaseline = 'top';
