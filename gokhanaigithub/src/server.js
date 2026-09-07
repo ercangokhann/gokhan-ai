@@ -7,6 +7,7 @@ import {
   tempPassword, passwordProblem, validUsername, validEmail, PASSWORD_MIN
 } from './auth.js';
 import { chatRouter, migrateChat } from './chat.js';
+import { mountSor } from './sor.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(__dirname, '..', 'public');
@@ -107,6 +108,10 @@ const actorOf = (req) => ({
   actor: req.user.username, name: req.user.display_name, email: req.user.email,
   ip: ipOf(req), ua: uaOf(req), device: devOf(req)
 });
+
+/* Siteden gelen herkese açık soru kutusu — CSRF korumasından önce bağlanıyor,
+   çünkü gknsoftware.com'dan çapraz köken isteği geliyor ve oturum kullanmıyor. */
+mountSor(app, ipOf);
 
 app.use('/api', csrfGuard);
 
