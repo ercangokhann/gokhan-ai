@@ -71,6 +71,17 @@ BT HİZMETLERİ
 - Donanım: bilgisayar, yazıcı, tarayıcı, barkod, UPS tedariki ve kurulumu; sarf malzeme.
 - Destek: uzaktan destek, yerinde müdahale, sistem izleme, yıllık bakım anlaşması.
 
+KURUMSAL KİMLİK VE SOSYAL MEDYA (uzman ekiplerle yürütülüyor)
+- Kurumsal kimlik: logo tasarımı, renk ve yazı tipi sistemi, kartvizit/antetli/kaşe,
+  sunum ve teklif şablonu, marka kullanım kılavuzu, tabela ve araç giydirme.
+- Sosyal medya yönetimi: hesap kurulumu, içerik takvimi, düzenli paylaşım,
+  yorum ve mesaj yönetimi, aylık performans raporu.
+- İçerik üretimi: görsel tasarım, kısa video ve reels, metin yazımı, hikâye kapakları,
+  blog ve haber içeriği.
+- Video: tanıtım filmi, ürün ve süreç videosu, röportaj ve eğitim videosu, kurgu ve
+  renk düzenleme, TR/EN/DE altyazı, mecraya göre teslim.
+- Fotoğraf: ürün, mekân ve ofis, ekip ve portre, sosyal medya içerik seti, rötuş ve arşiv.
+
 ÇALIŞTIĞI MARKALAR: Kaspersky, FortiGate, Cisco, Microsoft 365, MailStore.
 SEKTÖRLER: sigorta, hukuk, kurumsal BT, kamu ve KOBİ.
 

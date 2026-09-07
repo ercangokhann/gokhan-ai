@@ -9,7 +9,8 @@
     hero:      { n: 34, hiz: 0.16, mesafe: 190, nokta: 1.9, cizgi: 0.26, isik: 0.16, kare: 46 },
     projeler:  { n: 26, hiz: 0.13, mesafe: 210, nokta: 1.7, cizgi: 0.22, isik: 0.13, kare: 56 },
     magaza:    { n: 22, hiz: 0.11, mesafe: 230, nokta: 2.0, cizgi: 0.18, isik: 0.12, kare: 64 },
-    hizmetler: { n: 28, hiz: 0.14, mesafe: 200, nokta: 1.7, cizgi: 0.20, isik: 0.13, kare: 52 }
+    hizmetler: { n: 28, hiz: 0.14, mesafe: 200, nokta: 1.7, cizgi: 0.20, isik: 0.13, kare: 52 },
+    medya:     { n: 31, hiz: 0.19, mesafe: 175, nokta: 2.2, cizgi: 0.24, isik: 0.15, kare: 48 }
   };
 
   var sahneler = [];
