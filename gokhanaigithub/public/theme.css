@@ -1,10 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap");
 
 :root{
-  --ink:#14110D; --ink-2:#1C1813;
-  --hairline:rgba(217,119,87,.18); --hairline-2:rgba(245,241,234,.09);
+  --ink:#221C15; --ink-2:#2E271E;
+  --hairline:rgba(217,119,87,.24); --hairline-2:rgba(245,241,234,.12);
   --clay:#D97757; --clay-lit:#F0A57E; --ember:#E8C48A;
-  --cream:#F3EEE6; --muted:#9C9184; --muted-dim:#6B6257;
+  --cream:#F5F1EA; --muted:#AAA093; --muted-dim:#7E7466;
   --good:#8FB58C; --warn:#D8A24A; --bad:#E08A76;
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 }
@@ -21,10 +21,10 @@ body.locked{overflow:hidden}
 #rain{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
 .vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
   background:
-    radial-gradient(120% 90% at 50% 45%, rgba(20,17,13,.35) 0%, rgba(20,17,13,.86) 46%, rgba(20,17,13,.97) 78%),
-    linear-gradient(180deg, rgba(20,17,13,.9) 0%, rgba(20,17,13,0) 18%, rgba(20,17,13,0) 82%, rgba(20,17,13,.95) 100%);}
-.scan{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.35;
-  background:repeating-linear-gradient(180deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,.22) 3px, rgba(0,0,0,0) 4px);}
+    radial-gradient(125% 95% at 50% 45%, rgba(34,28,21,.18) 0%, rgba(34,28,21,.62) 48%, rgba(34,28,21,.86) 80%),
+    linear-gradient(180deg, rgba(34,28,21,.72) 0%, rgba(34,28,21,0) 20%, rgba(34,28,21,0) 80%, rgba(34,28,21,.8) 100%);}
+.scan{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.22;
+  background:repeating-linear-gradient(180deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,.16) 3px, rgba(0,0,0,0) 4px);}
 
 .shell{position:relative;z-index:3;min-height:100%;display:flex;flex-direction:column;padding:18px clamp(16px,4vw,34px) 0}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;
@@ -39,9 +39,9 @@ body.locked{overflow:hidden}
 
 .panel{
   width:min(440px,100%);
-  background:linear-gradient(180deg, rgba(28,24,19,.94), rgba(20,17,13,.94));
+  background:linear-gradient(180deg, rgba(56,47,36,.93), rgba(42,35,27,.93));
   border:1px solid var(--hairline);border-radius:4px;
-  box-shadow:0 0 0 1px rgba(0,0,0,.5), 0 40px 90px -30px rgba(0,0,0,.9), 0 0 120px -60px var(--clay);
+  box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 40px 90px -30px rgba(0,0,0,.75), 0 0 140px -70px var(--clay);
   backdrop-filter:blur(3px);display:flex;flex-direction:column;
   animation:rise .6s cubic-bezier(.2,.7,.2,1) both;
 }
@@ -61,17 +61,17 @@ form{padding:22px 26px 8px;display:flex;flex-direction:column;gap:16px}
 label{font-family:var(--mono);font-size:10px;letter-spacing:.19em;text-transform:uppercase;color:var(--muted);
   display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 label .hint{letter-spacing:.06em;text-transform:none;color:var(--muted-dim)}
-.inp{position:relative;display:flex;align-items:center;background:rgba(0,0,0,.34);
+.inp{position:relative;display:flex;align-items:center;background:rgba(0,0,0,.2);
   border:1px solid var(--hairline-2);border-radius:3px;
   transition:border-color .18s ease, box-shadow .18s ease, background .18s ease}
-.inp:focus-within{border-color:rgba(217,119,87,.62);background:rgba(0,0,0,.5);
+.inp:focus-within{border-color:rgba(217,119,87,.62);background:rgba(0,0,0,.3);
   box-shadow:0 0 0 3px rgba(217,119,87,.13), inset 0 0 22px -12px var(--clay)}
 .inp .caret{padding-left:11px;color:var(--clay);font-family:var(--mono);font-size:13px}
 input[type=text],input[type=password],select{
   flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--cream);
   font-family:var(--mono);font-size:14px;letter-spacing:.05em;padding:11px 12px 11px 8px}
 select{padding-left:12px;cursor:pointer}
-select option{background:#1C1813;color:var(--cream)}
+select option{background:#2E271E;color:var(--cream)}
 input::placeholder{color:var(--muted-dim);letter-spacing:.04em}
 input[type=password]{letter-spacing:.22em}
 
