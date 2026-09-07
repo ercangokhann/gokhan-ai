@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="gokhan.ai">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4F4234"/>
+      <stop offset="1" stop-color="#2F271F"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#g)"/>
+  <path d="M32 7v9M32 48v9M7 32h9M48 32h9" fill="none" stroke="#D97757" stroke-width="4" stroke-linecap="round" opacity=".85"/>
+  <circle cx="32" cy="32" r="14" fill="none" stroke="#F0A57E" stroke-width="4.4"/>
+  <circle cx="32" cy="32" r="5.4" fill="#D97757"/>
+</svg>
