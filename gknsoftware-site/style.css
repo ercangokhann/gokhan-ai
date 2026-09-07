@@ -426,3 +426,27 @@ footer{border-top:1px solid var(--line-2);padding:46px 0 50px}
   .ga-mad{grid-template-columns:1fr}
   .ga-sag{order:-1}
 }
+
+/* ═══════ hareketli arka plan ═══════ */
+.hero,.panel{background-image:none !important;
+  background:linear-gradient(180deg,#1B1610 0%,#141009 62%,#100D07 100%)}
+canvas.arka{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;
+  pointer-events:none}
+.hero::after,.panel::before{z-index:1}
+.hero>.wrap,.panel>h2,.panel>p,.panel>.acts{position:relative;z-index:2}
+
+/* ═══════ kaydırınca beliren içerik ═══════ */
+.gor{opacity:0;transform:translateY(16px);
+  transition:opacity .62s cubic-bezier(.2,.7,.2,1), transform .62s cubic-bezier(.2,.7,.2,1)}
+.gor.acik{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  .gor{opacity:1;transform:none;transition:none}
+}
+
+/* ═══════ iletişim kartları ═══════ */
+a.card{text-decoration:none}
+.card .iri{font-size:17px;color:var(--cream);font-weight:600;letter-spacing:.005em;
+  word-break:break-word}
+a.card:hover .iri{color:var(--clay-lit)}
+.satir a{border-bottom:1px solid rgba(217,119,87,.35);padding-bottom:1px}
+.f-grid a[href^="tel:"],.f-grid a[href^="mailto:"]{word-break:break-word}
