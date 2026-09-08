@@ -8,6 +8,7 @@ import {
 } from './auth.js';
 import { chatRouter, migrateChat } from './chat.js';
 import { mountSor } from './sor.js';
+import { mountUye, migrateUye } from './uye.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(__dirname, '..', 'public');
@@ -113,7 +114,11 @@ const actorOf = (req) => ({
    çünkü gknsoftware.com'dan çapraz köken isteği geliyor ve oturum kullanmıyor. */
 mountSor(app, ipOf);
 
+/* Site üyeliği — personel hesaplarından tamamen ayrı. CSRF korumasından sonra
+   bağlanıyor, çünkü sayfalar aynı köken üzerinde ve X-GA-Request başlığı gönderiyor. */
+
 app.use('/api', csrfGuard);
+mountUye(app, { ipOf, uaOf, PROD });
 
 /* ── oturum ──────────────────────────────────────────── */
 
@@ -400,6 +405,12 @@ app.use('/api', chatRouter({ requireAuth, audit, actorOf }));
 /* ── sayfalar ────────────────────────────────────────── */
 
 app.get('/healthz', (req, res) => res.type('text').send('ok'));
+
+/* Üye sayfaları — uzantısız adreslerle */
+for (const [yol, dosya] of [['/uye/giris','uye-giris.html'],['/uye/kayit','uye-kayit.html'],
+                            ['/uye/hesap','uye-hesap.html'],['/uye','uye-giris.html']]) {
+  app.get(yol, (req, res) => res.sendFile(path.join(PUBLIC, dosya)));
+}
 app.use(express.static(PUBLIC, { extensions: ['html'], maxAge: PROD ? '1h' : 0 }));
 app.get('*', (req, res) => res.sendFile(path.join(PUBLIC, 'index.html')));
 
@@ -458,6 +469,7 @@ function keepAwake() {
 const PORT = process.env.PORT || 3000;
 migrate()
   .then(migrateChat)
+  .then(migrateUye)
   .then(bootstrapAdmin)
   .then(() => {
     setInterval(sweep, 30 * 60 * 1000);

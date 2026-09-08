@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Hesabım — GOKHAN SOFTWARE</title>
+<meta name="theme-color" content="#131009">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/uye.css">
+</head><body>
+<header><div class="wrap bar">
+  <a class="logo" href="https://gknsoftware.onrender.com"><svg width="30" height="30" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M27 12 H24 Q22 12 22 14.5 V27 Q22 32 14 32 Q22 32 22 37 V49.5 Q22 52 24 52 H27" stroke="#D97757" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 12 H40 Q42 12 42 14.5 V27 Q42 32 50 32 Q42 32 42 37 V49.5 Q42 52 40 52 H37" stroke="#D97757" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="32" r="6.4" fill="#EF9873"/></svg><span class="wm"><b>GOKHAN</b><i>SOFTWARE</i></span></a>
+  <a class="geri" href="https://gknsoftware.onrender.com">&larr; Siteye dön</a>
+</div></header>
+
+<main class="genis"><div class="wrap"><div class="kutu genis">
+  <div class="hesap-bas">
+    <div><h1 id="selam">Hesabım</h1><p id="ozet">…</p></div>
+    <button class="btn ghost dar" id="cikis" type="button">Çıkış yap</button>
+  </div>
+  <div class="sekme">
+    <button class="on" data-b="bilgi">Bilgilerim</button>
+    <button data-b="siparis">Siparişlerim</button>
+    <button data-b="guvenlik">Güvenlik</button>
+  </div>
+
+  <div class="bolum on" id="b-bilgi">
+    <div class="mesaj" id="msgBilgi"></div>
+    <form id="fBilgi" novalidate>
+      <div class="alan"><label for="ad">Ad soyad</label><input id="ad" required></div>
+      <div class="iki">
+        <div class="alan"><label for="firma">Firma</label><input id="firma"></div>
+        <div class="alan"><label for="telefon">Telefon</label><input id="telefon" type="tel"></div>
+      </div>
+      <div class="alan"><label>E-posta</label><input id="email" disabled>
+        <div class="ipucu">E-posta adresini değiştirmek için bizimle iletişime geçin.</div></div>
+      <label class="onay"><input type="checkbox" id="izin">
+        <span>Yeni ürün ve kampanyalardan e-posta ile haberdar olmak istiyorum.</span></label>
+      <button class="btn dar" type="submit" id="btnBilgi">Kaydet</button>
+    </form>
+  </div>
+
+  <div class="bolum" id="b-siparis">
+    <div class="bos"><b>Henüz siparişiniz yok.</b>
+      Ürün satışı yakında açılıyor. Açıldığında siparişleriniz, faturalarınız ve
+      lisans yenileme tarihleriniz burada listelenecek.</div>
+  </div>
+
+  <div class="bolum" id="b-guvenlik">
+    <div class="mesaj" id="msgSifre"></div>
+    <form id="fSifre" novalidate>
+      <div class="alan"><label for="eski">Mevcut şifre</label>
+        <input id="eski" type="password" autocomplete="current-password" required></div>
+      <div class="alan"><label for="yeni">Yeni şifre</label>
+        <input id="yeni" type="password" autocomplete="new-password" required>
+        <div class="ipucu">En az 12 karakter. Değiştirdiğinizde diğer cihazlardaki oturumlar kapanır.</div></div>
+      <button class="btn dar" type="submit" id="btnSifre">Şifreyi değiştir</button>
+    </form>
+    <div class="tehlike">
+      <h3>Hesabı kapat</h3>
+      <p>Hesabınız ve kayıtlı bilgileriniz kalıcı olarak silinir. Bu işlem geri alınamaz.</p>
+      <div class="mesaj" id="msgKapat"></div>
+      <form id="fKapat" novalidate>
+        <div class="alan"><label for="kSifre">Şifrenizi yazın</label>
+          <input id="kSifre" type="password" required></div>
+        <button class="btn ghost dar" type="submit" id="btnKapat">Hesabımı kalıcı olarak kapat</button>
+      </form>
+    </div>
+  </div>
+</div></div></main>
+<footer><div class="wrap f-ic">
+  <span>&copy; <span id="yil">2026</span> GOKHAN SOFTWARE</span>
+  <span><a href="https://gknsoftware.onrender.com/iletisim.html">İletişim</a> &middot; <a href="https://gknsoftware.onrender.com">gknsoftware.com</a></span>
+</div></footer>
+<script src="/uye.js"></script>
+<script>document.getElementById('yil').textContent=new Date().getFullYear();</script>
+<script>
+(async function(){
+  var uye = null;
+  var r = await UYE.get('/api/uye/ben');
+  if (!r.ok) { location.href = '/uye/giris'; return; }
+  uye = r.veri.uye;
+  yaz();
+
+  function yaz(){
+    document.getElementById('selam').textContent =
+      'Merhaba, ' + (uye.ad ? uye.ad.split(' ')[0] : 'hoş geldiniz');
+    document.getElementById('ozet').textContent =
+      uye.email + ' · üyelik ' + UYE.tarih(uye.olusturuldu);
+    document.getElementById('ad').value = uye.ad || '';
+    document.getElementById('firma').value = uye.firma || '';
+    document.getElementById('telefon').value = uye.telefon || '';
+    document.getElementById('email').value = uye.email || '';
+    document.getElementById('izin').checked = !!uye.izinEposta;
+  }
+
+  document.querySelector('.sekme').addEventListener('click', function(e){
+    var b = e.target.closest('button[data-b]'); if (!b) return;
+    document.querySelectorAll('.sekme button').forEach(function(x){ x.classList.remove('on'); });
+    document.querySelectorAll('.bolum').forEach(function(x){ x.classList.remove('on'); });
+    b.classList.add('on');
+    document.getElementById('b-' + b.dataset.b).classList.add('on');
+  });
+
+  document.getElementById('cikis').addEventListener('click', async function(){
+    await UYE.post('/api/uye/cikis'); location.href = '/uye/giris';
+  });
+
+  document.getElementById('fBilgi').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var btn = document.getElementById('btnBilgi');
+    UYE.mesaj('msgBilgi',''); UYE.mesgul(btn, true, 'Kaydediliyor…');
+    var s = await UYE.patch('/api/uye/ben', {
+      ad: document.getElementById('ad').value,
+      firma: document.getElementById('firma').value,
+      telefon: document.getElementById('telefon').value,
+      izinEposta: document.getElementById('izin').checked
+    });
+    UYE.mesgul(btn, false);
+    if (s.ok) { uye = s.veri.uye; yaz(); UYE.mesaj('msgBilgi','Kaydedildi.','iyi'); }
+    else UYE.mesaj('msgBilgi', s.veri.error || 'Kaydedilemedi.');
+  });
+
+  document.getElementById('fSifre').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var btn = document.getElementById('btnSifre');
+    UYE.mesaj('msgSifre',''); UYE.mesgul(btn, true, 'Değiştiriliyor…');
+    var s = await UYE.post('/api/uye/sifre', {
+      eski: document.getElementById('eski').value,
+      yeni: document.getElementById('yeni').value
+    });
+    UYE.mesgul(btn, false);
+    if (s.ok) {
+      document.getElementById('fSifre').reset();
+      UYE.mesaj('msgSifre','Şifreniz değişti. Diğer cihazlardaki oturumlar kapatıldı.','iyi');
+    } else UYE.mesaj('msgSifre', s.veri.error || 'Değiştirilemedi.');
+  });
+
+  document.getElementById('fKapat').addEventListener('submit', async function(e){
+    e.preventDefault();
+    if (!confirm('Hesabınız ve tüm bilgileriniz kalıcı olarak silinecek. Emin misiniz?')) return;
+    var btn = document.getElementById('btnKapat');
+    UYE.mesaj('msgKapat',''); UYE.mesgul(btn, true, 'Kapatılıyor…');
+    var s = await UYE.post('/api/uye/kapat', { sifre: document.getElementById('kSifre').value });
+    UYE.mesgul(btn, false);
+    if (s.ok) location.href = UYE.site;
+    else UYE.mesaj('msgKapat', s.veri.error || 'Kapatılamadı.');
+  });
+})();
+</script>
+</body></html>

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Üye ol — GOKHAN SOFTWARE</title>
+<meta name="theme-color" content="#131009">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/uye.css">
+</head><body>
+<header><div class="wrap bar">
+  <a class="logo" href="https://gknsoftware.onrender.com"><svg width="30" height="30" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M27 12 H24 Q22 12 22 14.5 V27 Q22 32 14 32 Q22 32 22 37 V49.5 Q22 52 24 52 H27" stroke="#D97757" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 12 H40 Q42 12 42 14.5 V27 Q42 32 50 32 Q42 32 42 37 V49.5 Q42 52 40 52 H37" stroke="#D97757" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="32" r="6.4" fill="#EF9873"/></svg><span class="wm"><b>GOKHAN</b><i>SOFTWARE</i></span></a>
+  <a class="geri" href="https://gknsoftware.onrender.com">&larr; Siteye dön</a>
+</div></header>
+
+<main><div class="kutu">
+  <h1>Üye ol</h1>
+  <p class="alt">Ürün ve tekliflerinizi tek yerden takip etmek için hesap oluşturun.</p>
+  <div class="mesaj" id="msg"></div>
+  <form id="f" novalidate>
+    <div class="alan"><label for="ad">Ad soyad</label>
+      <input id="ad" autocomplete="name" required placeholder="Ercan Gökhan"></div>
+    <div class="iki">
+      <div class="alan"><label for="firma">Firma <span style="text-transform:none;letter-spacing:0">(isteğe bağlı)</span></label>
+        <input id="firma" autocomplete="organization" placeholder="Firma adı"></div>
+      <div class="alan"><label for="telefon">Telefon <span style="text-transform:none;letter-spacing:0">(isteğe bağlı)</span></label>
+        <input id="telefon" type="tel" autocomplete="tel" placeholder="+90 5xx xxx xx xx"></div>
+    </div>
+    <div class="alan"><label for="email">E-posta</label>
+      <input id="email" type="email" autocomplete="email" required placeholder="ornek@firma.com"></div>
+    <div class="alan"><label for="sifre">Şifre</label>
+      <input id="sifre" type="password" autocomplete="new-password" required>
+      <div class="ipucu">En az 12 karakter. Uzun ve size özel bir cümle en iyisi.</div></div>
+    <label class="onay"><input type="checkbox" id="izin">
+      <span>Yeni ürün ve kampanyalardan e-posta ile haberdar olmak istiyorum. (İstediğiniz zaman vazgeçebilirsiniz.)</span></label>
+    <button class="btn" type="submit" id="btn">Hesabı oluştur</button>
+  </form>
+  <div class="ayrac">zaten üye misiniz?</div>
+  <a class="btn ghost" href="/uye/giris">Giriş yap</a>
+</div></main>
+<footer><div class="wrap f-ic">
+  <span>&copy; <span id="yil">2026</span> GOKHAN SOFTWARE</span>
+  <span><a href="https://gknsoftware.onrender.com/iletisim.html">İletişim</a> &middot; <a href="https://gknsoftware.onrender.com">gknsoftware.com</a></span>
+</div></footer>
+<script src="/uye.js"></script>
+<script>document.getElementById('yil').textContent=new Date().getFullYear();</script>
+<script>
+(async function(){
+  var b = await UYE.get('/api/uye/ben');
+  if (b.ok) { location.href = '/uye/hesap'; return; }
+  document.getElementById('f').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var btn = document.getElementById('btn');
+    UYE.mesaj('msg',''); UYE.mesgul(btn, true, 'Oluşturuluyor…');
+    var r = await UYE.post('/api/uye/kayit', {
+      ad: document.getElementById('ad').value,
+      firma: document.getElementById('firma').value,
+      telefon: document.getElementById('telefon').value,
+      email: document.getElementById('email').value,
+      sifre: document.getElementById('sifre').value,
+      izinEposta: document.getElementById('izin').checked,
+      dil: 'tr'
+    });
+    UYE.mesgul(btn, false);
+    if (r.ok) location.href = '/uye/hesap';
+    else UYE.mesaj('msg', r.veri.error || 'Kayıt yapılamadı.');
+  });
+})();
+</script>
+</body></html>
