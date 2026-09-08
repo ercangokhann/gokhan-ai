@@ -450,3 +450,113 @@ a.card{text-decoration:none}
 a.card:hover .iri{color:var(--clay-lit)}
 .satir a{border-bottom:1px solid rgba(217,119,87,.35);padding-bottom:1px}
 .f-grid a[href^="tel:"],.f-grid a[href^="mailto:"]{word-break:break-word}
+
+/* ═══════ akan kod şeridi ═══════ */
+.serit-kod{position:relative;overflow:hidden;height:34px;border-block:1px solid var(--line-2);
+  background:rgba(244,241,234,.015);display:flex;align-items:center;z-index:2}
+.serit-kod.ust{border-top:0}
+.serit-kod .kayan{display:flex;gap:44px;white-space:nowrap;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;
+  letter-spacing:.04em;color:rgba(244,241,234,.20);
+  animation:kay 46s linear infinite}
+.serit-kod .kayan span{flex:none}
+.serit-kod .kayan b{color:rgba(239,152,115,.45);font-weight:400}
+@keyframes kay{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.serit-kod .kayan{animation:none}}
+
+/* ═══════ iki sütunlu hero ═══════ */
+.hero.yeni{min-height:auto;padding:64px 0 44px;align-items:stretch;text-align:left}
+.hero-iki{display:grid;grid-template-columns:1fr 1.08fr;gap:52px;align-items:center;
+  position:relative;z-index:2}
+.hero.yeni .hero-sol{text-align:left}
+.hero.yeni h1,.hero.yeni p{margin-left:0;margin-right:0;text-align:left}
+.hero.yeni h1{font-size:clamp(31px,4.3vw,52px);max-width:14ch;margin-bottom:20px}
+.hero.yeni p{font-size:17.5px;max-width:46ch;margin-bottom:28px}
+.hero.yeni .acts{justify-content:flex-start}
+.hero.yeni .kicker{text-align:left}
+.pill{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line);
+  border-radius:30px;padding:6px 15px 6px 12px;font-size:11.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--muted);background:rgba(244,241,234,.03);
+  margin-bottom:22px;font-weight:600}
+.pill i{width:6px;height:6px;border-radius:50%;background:var(--clay);flex:none;
+  box-shadow:0 0 0 3px rgba(217,119,87,.18)}
+.tikler{display:flex;flex-wrap:wrap;gap:9px 22px;margin-top:26px}
+.tik{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--muted)}
+.hero.yeni .rakam{justify-content:flex-start;text-align:left;margin-top:46px;
+  width:100%;max-width:none}
+.hero.yeni .rakam div{text-align:left}
+
+/* ═══════ kod editörü paneli ═══════ */
+.ed{background:linear-gradient(160deg,#231C15,#181309);border:1px solid var(--line);
+  border-radius:12px;overflow:hidden;box-shadow:0 34px 70px -30px rgba(0,0,0,.9),
+  0 0 0 1px rgba(217,119,87,.06)}
+.ed-bar{display:flex;align-items:center;gap:8px;padding:12px 15px;
+  border-bottom:1px solid var(--line-2);background:rgba(244,241,234,.025)}
+.nokta{width:9px;height:9px;border-radius:50%;flex:none}
+.nokta.a{background:#E08A76}.nokta.b{background:#D8A24A}.nokta.c{background:#8FB58C}
+.ed-ad{margin-left:8px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;
+  color:var(--muted);letter-spacing:.03em}
+.ed-canli{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:10px;
+  letter-spacing:.16em;color:#A6CBA3;font-weight:600}
+.ed-canli i{width:6px;height:6px;border-radius:50%;background:#8FB58C;
+  animation:nabz 1.9s ease-in-out infinite}
+@keyframes nabz{0%,100%{opacity:1}50%{opacity:.25}}
+.ed-kod{margin:0;padding:20px 20px 22px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:13px;line-height:1.85;color:var(--text);min-height:232px;white-space:pre;
+  overflow:hidden;tab-size:2}
+.ed-kod .k{color:#D9A0F0}      /* anahtar sözcük */
+.ed-kod .f{color:#EF9873}      /* işlev */
+.ed-kod .s{color:#A6CBA3}      /* metin */
+.ed-kod .y{color:#6F6555}      /* yorum */
+.ed-kod .n{color:#E3C489}      /* sayı */
+.ed-kod .im{display:inline-block;width:8px;height:15px;background:var(--clay);
+  vertical-align:-3px;animation:imlec 1s steps(2) infinite}
+@keyframes imlec{0%,49%{opacity:1}50%,100%{opacity:0}}
+.ed-alt{display:flex;gap:13px;align-items:flex-start;padding:15px 18px;
+  border-top:1px solid var(--line-2);background:rgba(217,119,87,.05)}
+.ed-ik{width:30px;height:30px;border-radius:8px;background:rgba(217,119,87,.15);flex:none;
+  display:flex;align-items:center;justify-content:center}
+.ed-alt b{display:block;color:var(--cream);font-size:14px;font-weight:600;margin-bottom:2px}
+.ed-alt span{display:block;font-size:13px;color:var(--muted);line-height:1.5}
+
+/* ═══════ çözüm kartları ═══════ */
+.g4{grid-template-columns:repeat(4,1fr)}
+.sec-head.cift{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;
+  max-width:none;flex-wrap:wrap}
+.sec-head.cift>div{max-width:62ch}
+.coz-kart{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);
+  border-radius:10px;padding:24px 22px 20px;text-decoration:none;position:relative;
+  transition:border-color .16s ease, background .16s ease, transform .16s ease}
+.coz-kart:hover{border-color:rgba(217,119,87,.42);background:var(--card-2);transform:translateY(-2px)}
+.coz-et{font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--clay);
+  font-weight:700;margin-bottom:13px}
+.coz-kart h3{font-size:17px;margin:0 0 9px;font-weight:700;letter-spacing:-.012em}
+.coz-kart p{font-size:14px;color:var(--text);margin:0 0 16px;flex:1}
+.coz-ok{font-size:17px;color:var(--clay);transition:transform .16s ease;align-self:flex-start}
+.coz-kart:hover .coz-ok{transform:translateX(4px)}
+
+/* ═══════ partner şeridi ═══════ */
+.p-serit{display:flex;flex-wrap:wrap;gap:12px}
+.p-logo{flex:1 1 auto;min-width:160px;text-align:center;border:1px solid var(--line);
+  border-radius:9px;padding:20px 18px;background:var(--card);color:var(--cream);
+  font-size:16px;font-weight:600;letter-spacing:.01em;transition:.16s}
+.p-logo:hover{border-color:rgba(217,119,87,.4);color:var(--clay-lit)}
+
+/* ═══════ başlıktaki giriş düğmesi ═══════ */
+.btn.kucuk{padding:9px 14px;font-size:13px;gap:7px}
+
+@media(max-width:980px){
+  .g4{grid-template-columns:repeat(2,1fr)}
+  .hero-iki{grid-template-columns:1fr;gap:36px}
+  .hero-sag{order:-1}
+}
+@media(max-width:900px){
+  .btn.kucuk span,.btn.kucuk{font-size:0;padding:9px 11px}
+  .btn.kucuk svg{width:16px;height:16px}
+  .sec-head.cift{display:block}
+  .sec-head.cift .btn{margin-top:18px}
+}
+@media(max-width:620px){
+  .g4{grid-template-columns:1fr}
+  .ed-kod{font-size:12px;min-height:200px}
+}

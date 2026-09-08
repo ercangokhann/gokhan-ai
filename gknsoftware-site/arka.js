@@ -175,7 +175,97 @@
     }
   }
 
-  function hazir() { baslat(); canlandir(); }
+
+  /* ═══ 3) Hero'daki kod paneli — kendi kendine yazılıyor ═══ */
+  function editor() {
+    var el = document.getElementById('edKod');
+    if (!el) return;
+    var dil = (document.documentElement.lang || 'tr').slice(0, 2);
+
+    var Y = {                                    // yorum satırları
+      tr: ['// rücu dosyası açılıyor', '// taksitler hesaplanıyor', '// eski kayıtlar taşınıyor'],
+      en: ['// opening a recourse file', '// calculating instalments', '// migrating legacy records'],
+      de: ['// Regressakte wird angelegt', '// Raten werden berechnet', '// Altdaten werden übernommen']
+    }[dil] || null;
+    if (!Y) Y = ['// rücu dosyası açılıyor', '// taksitler hesaplanıyor', '// eski kayıtlar taşınıyor'];
+
+    /* Gösterilecek kod blokları. Her parça [sınıf, metin]. */
+    var bloklar = [
+      [['y', Y[0] + '\n'],
+       ['k', 'const '], ['', 'dosya = '], ['k', 'await '], ['f', 'ac'], ['', '({\n'],
+       ['', '  borclu: '], ['s', "'Yılmaz Nakliyat Ltd.'"], ['', ',\n'],
+       ['', '  alacak: '], ['n', '462000'], ['', ',\n'],
+       ['', '  taksit:  '], ['n', '12'], ['', ',\n'],
+       ['', '});\n\n'],
+       ['f', 'takipBaslat'], ['', '(dosya);']],
+
+      [['y', Y[1] + '\n'],
+       ['k', 'for '], ['', '(const t '], ['k', 'of '], ['', 'dosya.taksitler) {\n'],
+       ['', '  t.faiz = '], ['f', 'hesapla'], ['', '(t, '], ['s', "'yasal'"], ['', ');\n'],
+       ['', '  '], ['k', 'if '], ['', '(t.gecikti) '], ['f', 'uyar'], ['', '(t);\n'],
+       ['', '}\n\n'],
+       ['f', 'kaydet'], ['', '(dosya); '], ['y', '// tek ekranda']],
+
+      [['y', Y[2] + '\n'],
+       ['k', 'const '], ['', 'eski = '], ['k', 'await '], ['f', 'oku'], ['', '('], ['s', "'legacy.sql'"], ['', ');\n'],
+       ['k', 'const '], ['', 'sonuc = '], ['k', 'await '], ['f', 'tasi'], ['', '(eski, {\n'],
+       ['', '  dogrula: '], ['k', 'true'], ['', ',\n'],
+       ['', '  kayip:   '], ['n', '0'], ['', ',\n'],
+       ['', '});\n\n'],
+       ['y', '// 1.284 dosya, tek satır kayıp yok']]
+    ];
+
+    var azaltVar = azalt;
+    var b = 0;
+
+    function yaz(blok, bitti) {
+      var parcalar = blok.slice(), i = 0, j = 0, html = '';
+      function adim() {
+        if (i >= parcalar.length) { el.innerHTML = html; setTimeout(bitti, 2600); return; }
+        var sinif = parcalar[i][0], metin = parcalar[i][1];
+        j++;
+        if (j > metin.length) { i++; j = 0; adim(); return; }
+        var tam = '';
+        for (var k = 0; k < i; k++) {
+          tam += sar(parcalar[k][0], parcalar[k][1]);
+        }
+        tam += sar(sinif, metin.slice(0, j));
+        el.innerHTML = tam + '<span class="im"></span>';
+        html = tam;
+        setTimeout(adim, metin[j - 1] === '\n' ? 90 : 16 + Math.random() * 22);
+      }
+      adim();
+    }
+    function sar(sinif, metin) {
+      var g = metin.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return sinif ? '<span class="' + sinif + '">' + g + '</span>' : g;
+    }
+    function tumu(blok) {
+      return blok.map(function (x) { return sar(x[0], x[1]); }).join('');
+    }
+
+    if (azaltVar) { el.innerHTML = tumu(bloklar[0]); return; }
+    (function sonraki() {
+      yaz(bloklar[b], function () { b = (b + 1) % bloklar.length; sonraki(); });
+    })();
+  }
+
+  /* ═══ 4) Akan kod şeridi ═══ */
+  function serit() {
+    var kutular = document.querySelectorAll('.serit-kod .kayan');
+    if (!kutular.length) return;
+    var parca = [
+      'const future = <b>await</b> build({ idea: <b>&#39;daha iyi bir i&#351;&#39;</b>, care: true });',
+      '<b>git</b> commit -m &quot;m&uuml;&#351;teri anlatt&#305;, biz yazd&#305;k&quot;',
+      'backup.verify() &rarr; <b>ok</b> &nbsp;&middot;&nbsp; 1.284 dosya &nbsp;&middot;&nbsp; 0 kay&#305;p',
+      'firewall.rule(<b>&#39;deny&#39;</b>, from: <b>&#39;*&#39;</b>, to: <b>&#39;musteri_verisi&#39;</b>);',
+      'deploy(<b>&#39;gknsoftware&#39;</b>) &nbsp;&middot;&nbsp; <b>live</b>'
+    ];
+    var tek = parca.map(function (p) { return '<span>' + p + '</span>'; }).join('');
+    for (var i = 0; i < kutular.length; i++) kutular[i].innerHTML = tek + tek;
+  }
+
+  function hazir() { baslat(); canlandir(); editor(); serit(); }
   if (document.readyState === 'loading')
     document.addEventListener('DOMContentLoaded', hazir);
   else hazir();
