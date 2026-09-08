@@ -428,7 +428,7 @@ footer{border-top:1px solid var(--line-2);padding:46px 0 50px}
 }
 
 /* ═══════ hareketli arka plan ═══════ */
-.hero,.panel{background-image:none !important;
+.hero:not(.foto),.panel:not(.foto){background-image:none;
   background:linear-gradient(180deg,#1B1610 0%,#141009 62%,#100D07 100%)}
 canvas.arka{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;
   pointer-events:none}
@@ -575,3 +575,92 @@ html,body{max-width:100%;overflow-x:hidden}
   .logo .wm b{font-size:13.5px}
   .sag{gap:7px}
 }
+
+/* ═══════ FOTOĞRAF KATMANI ═══════ */
+:root{ --mavi:#7FB4D4; --amber:#E8B968; --mor:#BC9BD4; --yesil:#8FB58C; }
+
+/* hero ve paneller artık fotoğraf üstünde */
+.hero.foto,.panel.foto{background-size:cover;background-position:center;
+  background-repeat:no-repeat}
+.hero.foto::after{background:
+  linear-gradient(100deg, rgba(15,12,7,.90) 0%, rgba(15,12,7,.66) 34%, rgba(15,12,7,.18) 62%,
+                          rgba(15,12,7,.30) 100%),
+  linear-gradient(180deg, rgba(15,12,7,.42) 0%, rgba(15,12,7,0) 26%, rgba(15,12,7,.72) 100%)}
+.hero.foto canvas.arka{opacity:.30}
+.panel.foto::before{background:
+  linear-gradient(180deg, rgba(15,12,7,.20) 0%, rgba(15,12,7,.34) 34%, rgba(15,12,7,.82) 72%,
+                          rgba(15,12,7,.97) 100%)}
+.panel.foto canvas.arka{opacity:.16}
+.panel.foto{min-height:min(76vh,620px)}
+
+/* tam genişlik renkli bant */
+.bant{position:relative;background-size:cover;background-position:center;
+  padding:110px 0;display:flex;align-items:center}
+.bant::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg, rgba(15,12,7,.92) 0%, rgba(15,12,7,.66) 44%,
+                             rgba(15,12,7,.22) 78%, rgba(15,12,7,.30) 100%)}
+.bant-ic{position:relative;z-index:1}
+.bant h2{font-size:clamp(25px,3.4vw,38px);line-height:1.16;letter-spacing:-.02em;
+  margin:0 0 14px;max-width:20ch;font-weight:700}
+.bant p{font-size:17px;color:var(--text);max-width:56ch;margin:0}
+
+/* bölüm başı fotoğrafı */
+.bolum-foto{border-radius:12px;overflow:hidden;margin:0 0 34px;border:1px solid var(--line);
+  position:relative;background:#0F0C07}
+.bolum-foto img{display:block;width:100%;height:clamp(190px,26vw,300px);object-fit:cover}
+.bolum-foto::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(15,12,7,0) 0%, rgba(15,12,7,.10) 62%, rgba(15,12,7,.42) 100%)}
+.grid.g2 .bolum-foto img{height:clamp(200px,22vw,270px)}
+
+/* çözüm kartları — fotoğraflı */
+.coz-kart{padding:0;overflow:hidden}
+.coz-foto{display:block;position:relative;height:150px;overflow:hidden;background:#0F0C07}
+.coz-foto img{width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.coz-foto::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(15,12,7,0) 0%, rgba(32,26,19,.35) 55%, rgba(32,26,19,.94) 100%)}
+.coz-kart:hover .coz-foto img{transform:scale(1.06)}
+.coz-ic{display:flex;flex-direction:column;flex:1;padding:0 20px 20px;margin-top:-16px;
+  position:relative;z-index:1}
+.coz-kart.r-kil   .coz-et{color:var(--clay)}
+.coz-kart.r-mavi  .coz-et{color:var(--mavi)}
+.coz-kart.r-amber .coz-et{color:var(--amber)}
+.coz-kart.r-mor   .coz-et{color:var(--mor)}
+.coz-kart.r-mavi:hover{border-color:rgba(127,180,212,.45)}
+.coz-kart.r-amber:hover{border-color:rgba(232,185,104,.45)}
+.coz-kart.r-mor:hover{border-color:rgba(188,155,212,.45)}
+.coz-kart.r-mavi .coz-ok{color:var(--mavi)}
+.coz-kart.r-amber .coz-ok{color:var(--amber)}
+
+/* iletişim bloğu fotoğraf üstünde */
+.iletisim{position:relative;background-size:cover;background-position:center;
+  overflow:hidden;border-color:rgba(244,241,234,.14)}
+.iletisim::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg, rgba(20,16,10,.94) 0%, rgba(20,16,10,.80) 48%,
+                             rgba(20,16,10,.44) 100%)}
+.iletisim>*{position:relative;z-index:1}
+
+/* hizmet kartlarına renk çeşitliliği */
+.grid.g3 .card:nth-child(2) .ic{background:rgba(127,180,212,.15)}
+.grid.g3 .card:nth-child(2) .ic svg{stroke:var(--mavi)}
+.grid.g3 .card:nth-child(3) .ic{background:rgba(232,185,104,.15)}
+.grid.g3 .card:nth-child(3) .ic svg{stroke:var(--amber)}
+.grid.g3 .card:nth-child(5) .ic{background:rgba(143,181,140,.15)}
+.grid.g3 .card:nth-child(5) .ic svg{stroke:var(--yesil)}
+.grid.g3 .card:nth-child(7) .ic{background:rgba(188,155,212,.15)}
+.grid.g3 .card:nth-child(7) .ic svg{stroke:var(--mor)}
+.bt-grup:nth-child(even) .bt-bas .ic{background:rgba(127,180,212,.14)}
+.bt-grup:nth-child(even) .bt-bas .ic svg{stroke:var(--mavi)}
+
+.kaynak{color:var(--faint)}
+
+@media(max-width:900px){
+  .bant{padding:74px 0}
+  .bolum-foto img{height:190px}
+  .hero.foto::after{background:
+    linear-gradient(180deg, rgba(15,12,7,.52) 0%, rgba(15,12,7,.74) 45%, rgba(15,12,7,.94) 100%)}
+}
+
+.panel.foto h2,.panel.foto p,.bant h2,.bant p,.hero.foto h1,.hero.foto p{
+  text-shadow:0 2px 22px rgba(10,8,4,.85), 0 1px 3px rgba(10,8,4,.6)}
+.panel.foto .acts,.bant .acts{position:relative;z-index:2}
