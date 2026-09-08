@@ -560,3 +560,18 @@ a.card:hover .iri{color:var(--clay-lit)}
   .g4{grid-template-columns:1fr}
   .ed-kod{font-size:12px;min-height:200px}
 }
+
+/* ═══════ dar ekranda başlık taşmasın ═══════ */
+html,body{max-width:100%;overflow-x:hidden}
+.bar{min-width:0}
+.sag{min-width:0;flex-wrap:nowrap}
+@media(max-width:640px){
+  .sag>a.btn:not(.kucuk){display:none}   /* "Teklif alın" — menüde ve alt bilgide zaten var */
+  .dil a,.dil span{padding:5px 6px;font-size:10.5px}
+  .logo .wm i{letter-spacing:.22em}
+}
+@media(max-width:400px){
+  .logo svg{width:28px;height:28px}
+  .logo .wm b{font-size:13.5px}
+  .sag{gap:7px}
+}
