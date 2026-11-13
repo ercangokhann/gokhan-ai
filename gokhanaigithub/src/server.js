@@ -111,7 +111,7 @@ const actorOf = (req) => ({
 });
 
 /* Siteden gelen herkese açık soru kutusu — CSRF korumasından önce bağlanıyor,
-   çünkü gknsoftware.com'dan çapraz köken isteği geliyor ve oturum kullanmıyor. */
+   çünkü gokhansoftware.com'dan çapraz köken isteği geliyor ve oturum kullanmıyor. */
 mountSor(app, ipOf);
 
 /* Site üyeliği — personel hesaplarından tamamen ayrı. CSRF korumasından sonra
