@@ -1,4 +1,4 @@
-/* Site üyeliği — gknsoftware.com ziyaretçilerinin müşteri hesabı.
+/* Site üyeliği — gokhansoftware.com ziyaretçilerinin müşteri hesabı.
    Personel hesaplarından (users tablosu, ga_session çerezi) tamamen ayrıdır:
    ayrı tablo, ayrı çerez, ayrı uç noktalar. Bir müşteri hesabı gokhan.ai
    çalışma alanına ya da yönetim paneline erişemez. */

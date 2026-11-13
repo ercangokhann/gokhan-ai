@@ -259,7 +259,7 @@
       '<b>git</b> commit -m &quot;m&uuml;&#351;teri anlatt&#305;, biz yazd&#305;k&quot;',
       'backup.verify() &rarr; <b>ok</b> &nbsp;&middot;&nbsp; 1.284 dosya &nbsp;&middot;&nbsp; 0 kay&#305;p',
       'firewall.rule(<b>&#39;deny&#39;</b>, from: <b>&#39;*&#39;</b>, to: <b>&#39;musteri_verisi&#39;</b>);',
-      'deploy(<b>&#39;gknsoftware&#39;</b>) &nbsp;&middot;&nbsp; <b>live</b>'
+      'deploy(<b>&#39;gokhansoftware&#39;</b>) &nbsp;&middot;&nbsp; <b>live</b>'
     ];
     var tek = parca.map(function (p) { return '<span>' + p + '</span>'; }).join('');
     for (var i = 0; i < kutular.length; i++) kutular[i].innerHTML = tek + tek;

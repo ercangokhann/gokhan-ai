@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://gknsoftware.com/sitemap.xml
+Sitemap: https://gokhansoftware.com/sitemap.xml

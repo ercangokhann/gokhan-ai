@@ -4,7 +4,7 @@
 import { chat } from './ai.js';
 
 const IZIN = (process.env.SITE_ORIGINS ||
-  'https://gknsoftware.com,https://www.gknsoftware.com')
+  'https://gokhansoftware.com,https://www.gokhansoftware.com,https://gknsoftware.com,https://www.gknsoftware.com')
   .split(',').map((s) => s.trim()).filter(Boolean);
 
 const izinli = (o) =>
