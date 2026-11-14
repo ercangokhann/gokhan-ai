@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ücretsiz E-posta ve Web Güvenlik Kontrolü — GOKHAN SOFTWARE</title>
+<meta name="description" content="Alan adınızın e-posta güvenliğini (SPF, DKIM, DMARC) ve web sitenizin HTTPS durumunu ücretsiz kontrol edin.">
+<link rel="canonical" href="https://gokhansoftware.com/guvenlik-kontrolu.html">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+  :root{
+    --bg:#131009;--bg2:#191510;--card:#201A13;--card2:#282017;--line:rgba(244,241,234,.11);
+    --cream:#F5F2EB;--text:#CFC6B8;--muted:#9A8F80;--clay:#D97757;--clay-lit:#EF9873;
+    --ok:#8FB58C;--ok-bg:rgba(143,181,140,.14);--warn:#E8B968;--warn-bg:rgba(232,185,104,.14);
+    --bad:#EF8A7A;--bad-bg:rgba(239,138,122,.14);
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--text);line-height:1.6;font-size:17px}
+  a{color:var(--clay-lit)}
+  .wrap{max-width:880px;margin:0 auto;padding:0 22px}
+  header{background:var(--bg2);border-bottom:1px solid var(--line);padding:48px 0 60px}
+  .brand{font-family:var(--mono);font-weight:600;letter-spacing:.05em;font-size:14px;margin:0 0 30px;color:var(--cream)}
+  .brand span{color:var(--clay)}
+  h1{font-size:clamp(30px,5vw,46px);line-height:1.1;margin:0 0 14px;color:var(--cream);letter-spacing:-.01em}
+  h1 em{font-style:normal;color:var(--clay)}
+  .sub{color:var(--text);font-size:18px;margin:0 0 30px;max-width:640px}
+  form{display:flex;gap:12px;flex-wrap:wrap}
+  label.vh{position:absolute;left:-9999px}
+  input[type=text]{flex:1 1 320px;font:inherit;font-size:18px;padding:15px 18px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--cream)}
+  input[type=text]:focus{outline:none;border-color:var(--clay)}
+  button{font:inherit;font-weight:600;font-size:17px;padding:15px 26px;border-radius:10px;border:none;background:var(--clay);color:#1A120C;cursor:pointer}
+  button:hover{background:var(--clay-lit)}
+  button:disabled{opacity:.6;cursor:wait}
+  .note{font-size:14px;color:var(--muted);margin:14px 0 0}
+  main{padding:40px 0 64px}
+  .hidden{display:none}
+  .summary{display:flex;gap:24px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;margin-bottom:22px}
+  .grade{width:96px;height:96px;flex:0 0 96px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:52px;font-weight:700;color:#fff}
+  .summary h2{margin:0 0 4px;font-size:24px;color:var(--cream)}
+  .summary p{margin:0}
+  .checks{display:flex;flex-direction:column;gap:12px}
+  .check{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:grid;grid-template-columns:auto 1fr;gap:6px 16px}
+  .badge{grid-row:span 2;align-self:start;font-family:var(--mono);font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:6px;white-space:nowrap}
+  .b-ok{background:var(--ok-bg);color:var(--ok)}
+  .b-warn{background:var(--warn-bg);color:var(--warn)}
+  .b-bad{background:var(--bad-bg);color:var(--bad)}
+  .b-info{background:rgba(127,180,212,.14);color:#7FB4D4}
+  .check h3{margin:0;font-size:18px;color:var(--cream)}
+  .check p{margin:0;font-size:15.5px}
+  .check code{font-family:var(--mono);font-size:13px;background:var(--card2);color:var(--cream);padding:2px 6px;border-radius:4px;word-break:break-all}
+  .cta{margin-top:28px;background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:28px}
+  .cta h2{margin:0 0 8px;font-size:24px;color:var(--cream)}
+  .cta p{margin:0 0 18px}
+  .cta .btns{display:flex;gap:12px;flex-wrap:wrap}
+  .cta a{display:inline-block;text-decoration:none;font-weight:600;padding:13px 22px;border-radius:10px}
+  .wa{background:var(--clay);color:#1A120C}
+  .ml{border:1px solid var(--line);color:var(--cream)}
+  .cta .contact{font-family:var(--mono);font-size:14px;color:var(--muted);margin:16px 0 0}
+  .err{background:var(--bad-bg);color:var(--bad);border-radius:12px;padding:16px 18px}
+  .how{margin-top:40px}
+  .how h2{font-size:22px;margin:0 0 12px;color:var(--cream)}
+  .how dl{margin:0;display:grid;grid-template-columns:140px 1fr;gap:10px 18px}
+  .how dt{font-weight:600;color:var(--cream)}
+  .how dd{margin:0}
+  footer{border-top:1px solid var(--line);padding:22px 0;font-size:14px;color:var(--muted)}
+  @media(max-width:560px){.summary{flex-direction:column;align-items:flex-start}.how dl{grid-template-columns:1fr}.check{grid-template-columns:1fr}.badge{grid-row:auto;justify-self:start}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <p class="brand"><a href="index.html" style="color:inherit;text-decoration:none">GOKHAN<span>_</span>SOFTWARE</a> · <a href="index.html" style="color:var(--muted);font-weight:400">← Ana sayfa</a></p>
+    <h1>Ücretsiz <em>e-posta ve web</em> güvenlik kontrolü</h1>
+    <p class="sub">Alan adınızı yazın; e-postalarınızın sahte gönderime karşı korunup korunmadığını ve sitenizin güvenli bağlantı kullanıp kullanmadığını 10 saniyede görün.</p>
+    <form id="f" novalidate>
+      <label class="vh" for="d">Alan adı</label>
+      <input id="d" type="text" placeholder="ornekfirma.com.tr" autocomplete="off" spellcheck="false" inputmode="url">
+      <button id="go" type="submit">Kontrol et</button>
+    </form>
+    <p class="note">Sorgu tarayıcınızda yapılır, alan adınız bizde kaydedilmez. Yalnızca herkese açık DNS kayıtları okunur.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="out" class="hidden"></div>
+
+  <section class="how">
+    <h2>Neleri kontrol ediyoruz?</h2>
+    <dl>
+      <dt>MX</dt><dd>Alan adınıza e-posta gelebiliyor mu, hangi servis kullanılıyor?</dd>
+      <dt>SPF</dt><dd>Sizin adınıza hangi sunucuların e-posta gönderebileceği tanımlı mı?</dd>
+      <dt>DKIM</dt><dd>Gönderilen e-postalar dijital olarak imzalanıyor mu?</dd>
+      <dt>DMARC</dt><dd>Sahte e-postalar alıcıda reddediliyor ya da karantinaya alınıyor mu?</dd>
+      <dt>HTTPS</dt><dd>Web siteniz şifreli bağlantıyla açılıyor mu?</dd>
+      <dt>DNSSEC</dt><dd>DNS kayıtlarınız sahteciliğe karşı imzalı mı?</dd>
+    </dl>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">© GOKHAN SOFTWARE Bilgi Teknolojileri ve Danışmanlık Tic. Ltd. Şti. · gokhansoftware.com · +90 501 051 96 60</div>
+</footer>
+
+<script>
+(function(){
+  var WA = '905010519660';
+  var MAIL = 'info@gokhansoftware.com';
+  var DKIM_SELECTORS = ['default','selector1','selector2','google','k1','mail','dkim','s1','s2','mx','smtp','turhost'];
+
+  var form = document.getElementById('f');
+  var input = document.getElementById('d');
+  var btn = document.getElementById('go');
+  var out = document.getElementById('out');
+
+  function clean(v){
+    v = (v || '').trim().toLowerCase();
+    v = v.replace(/^[a-z]+:\/\//, '').replace(/^www\./, '');
+    v = v.split('/')[0].split('?')[0].split('#')[0].split(':')[0];
+    if (v.indexOf('@') > -1) v = v.split('@').pop();
+    return v;
+  }
+  function validDomain(d){ return /^(?=.{3,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9-]{2,63}$/.test(d); }
+
+  function timeout(p, ms){
+    return new Promise(function(res, rej){
+      var t = setTimeout(function(){ rej(new Error('timeout')); }, ms);
+      p.then(function(v){ clearTimeout(t); res(v); }, function(e){ clearTimeout(t); rej(e); });
+    });
+  }
+
+  // DNS-over-HTTPS: önce Google, olmazsa Cloudflare
+  function dns(name, type){
+    var g = 'https://dns.google/resolve?name=' + encodeURIComponent(name) + '&type=' + type + '&do=1';
+    return timeout(fetch(g).then(function(r){ if(!r.ok) throw new Error('g'); return r.json(); }), 6000)
+      .catch(function(){
+        var c = 'https://cloudflare-dns.com/dns-query?name=' + encodeURIComponent(name) + '&type=' + type + '&do=1';
+        return timeout(fetch(c, {headers:{'accept':'application/dns-json'}}).then(function(r){ if(!r.ok) throw new Error('c'); return r.json(); }), 6000);
+      });
+  }
+  var TYPE_NUM = {A:1, MX:15, TXT:16, CNAME:5};
+  function answers(j, type){
+    var n = TYPE_NUM[type];
+    return ((j && j.Answer) || []).filter(function(a){ return !n || a.type === n; }).map(function(a){ return String(a.data); });
+  }
+  function txtJoin(s){
+    // "v=spf1 ..." "devamı" -> tek metin
+    var parts = s.match(/"((?:[^"\\]|\\.)*)"/g);
+    if (!parts) return s;
+    return parts.map(function(p){ return p.slice(1, -1); }).join('');
+  }
+
+  function esc(s){ var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+  function mxProvider(mx){
+    var s = mx.join(' ').toLowerCase();
+    if (s.indexOf('google') > -1 || s.indexOf('googlemail') > -1) return 'Google Workspace';
+    if (s.indexOf('outlook.com') > -1 || s.indexOf('protection.outlook') > -1) return 'Microsoft 365';
+    if (s.indexOf('yandex') > -1) return 'Yandex';
+    if (s.indexOf('zoho') > -1) return 'Zoho';
+    if (s.indexOf('turhost') > -1) return 'Turhost';
+    return null;
+  }
+
+  function checkMX(d){
+    return dns(d, 'MX').then(function(j){
+      var mx = answers(j, 'MX').map(function(x){ return x.split(' ').pop().replace(/\.$/, ''); });
+      if (!mx.length) return {key:'MX', title:'E-posta sunucusu (MX)', status:'bad', score:0, max:10,
+        text:'Alan adınızda MX kaydı bulunamadı; bu adrese e-posta gelmiyor olabilir.'};
+      var p = mxProvider(mx);
+      return {key:'MX', title:'E-posta sunucusu (MX)', status:'ok', score:10, max:10,
+        text:'E-posta alınabiliyor' + (p ? ' — servis: ' + p : '') + '. Kayıt: ', code: mx.slice(0,3).join(', ')};
+    });
+  }
+
+  function checkSPF(d){
+    return dns(d, 'TXT').then(function(j){
+      var spf = answers(j, 'TXT').map(txtJoin).filter(function(t){ return /^v=spf1(\s|$)/i.test(t); });
+      if (!spf.length) return {key:'SPF', title:'SPF', status:'bad', score:0, max:25,
+        text:'SPF kaydı yok. Herkes sizin adınıza e-posta gönderebilir; e-postalarınız spam kutusuna düşebilir.'};
+      if (spf.length > 1) return {key:'SPF', title:'SPF', status:'bad', score:5, max:25,
+        text:'Birden fazla SPF kaydı var; bu durumda SPF geçersiz sayılır. Kayıtlar tek kayıtta birleştirilmeli.', code: spf.join(' | ')};
+      var r = spf[0];
+      if (/[\s]-all\s*$/i.test(r)) return {key:'SPF', title:'SPF', status:'ok', score:25, max:25, text:'SPF tanımlı ve sıkı modda (-all). ', code:r};
+      if (/~all\s*$/i.test(r)) return {key:'SPF', title:'SPF', status:'warn', score:18, max:25, text:'SPF tanımlı ama yumuşak modda (~all). DMARC ile birlikte yeterli olabilir; sıkılaştırılması önerilir.', code:r};
+      if (/[+?]all\s*$/i.test(r) || /\sall\s*$/i.test(r)) return {key:'SPF', title:'SPF', status:'bad', score:5, max:25, text:'SPF tüm sunuculara izin veriyor (+all / ?all); koruma sağlamıyor.', code:r};
+      return {key:'SPF', title:'SPF', status:'warn', score:15, max:25, text:'SPF tanımlı ama sonunda "all" kuralı yok.', code:r};
+    });
+  }
+
+  function checkDMARC(d){
+    return dns('_dmarc.' + d, 'TXT').then(function(j){
+      var rec = answers(j, 'TXT').map(txtJoin).filter(function(t){ return /^v=DMARC1/i.test(t); });
+      if (!rec.length) return {key:'DMARC', title:'DMARC', status:'bad', score:0, max:30,
+        text:'DMARC kaydı yok. Alan adınızla gönderilen sahte e-postalar (oltalama) alıcıya ulaşabilir.'};
+      var r = rec[0];
+      var p = (r.match(/;\s*p\s*=\s*(\w+)/i) || [])[1];
+      p = p ? p.toLowerCase() : '';
+      var rua = /rua\s*=/i.test(r);
+      if (p === 'reject') return {key:'DMARC', title:'DMARC', status:'ok', score:30, max:30, text:'DMARC tam koruma modunda (p=reject).' + (rua ? '' : ' Raporlama adresi (rua) eklenmesi önerilir.') + ' ', code:r};
+      if (p === 'quarantine') return {key:'DMARC', title:'DMARC', status:'ok', score:26, max:30, text:'DMARC koruma modunda (p=quarantine): sahte e-postalar spam kutusuna gider. ', code:r};
+      return {key:'DMARC', title:'DMARC', status:'warn', score:12, max:30, text:'DMARC var ama yalnızca izleme modunda (p=none); sahte e-postaları engellemiyor. ', code:r};
+    });
+  }
+
+  function checkDKIM(d){
+    var tries = DKIM_SELECTORS.map(function(s){
+      return dns(s + '._domainkey.' + d, 'TXT').then(function(j){
+        var a = answers(j, 'TXT').map(txtJoin).concat(answers(j, 'CNAME'));
+        return a.some(function(t){ return /v=DKIM1|p=|domainkey/i.test(t); }) ? s : null;
+      }).catch(function(){ return null; });
+    });
+    return Promise.all(tries).then(function(found){
+      found = found.filter(Boolean);
+      if (found.length) return {key:'DKIM', title:'DKIM imzası', status:'ok', score:20, max:20, text:'DKIM anahtarı bulundu. Seçici: ', code: found.join(', ')};
+      return {key:'DKIM', title:'DKIM imzası', status:'warn', score:8, max:20,
+        text:'Yaygın seçicilerde DKIM anahtarı bulunamadı. Farklı bir seçici kullanılıyor olabilir; detaylı incelemede kesinleştiririz.'};
+    });
+  }
+
+  function checkHTTPS(d){
+    function hit(host){
+      return timeout(fetch('https://' + host + '/', {mode:'no-cors', cache:'no-store', redirect:'follow'}), 7000).then(function(){ return true; });
+    }
+    return hit(d).catch(function(){ return hit('www.' + d); }).then(function(){
+      return {key:'HTTPS', title:'Web sitesi HTTPS', status:'ok', score:10, max:10, text:'Web siteniz şifreli (HTTPS) bağlantıyla açılıyor.'};
+    }).catch(function(){
+      return {key:'HTTPS', title:'Web sitesi HTTPS', status:'warn', score:3, max:10,
+        text:'Web sitenize HTTPS ile ulaşılamadı. Site kapalı olabilir ya da SSL sertifikası eksik veya süresi dolmuş olabilir.'};
+    });
+  }
+
+  function checkDNSSEC(d){
+    return dns(d, 'A').then(function(j){
+      if (j && j.AD === true) return {key:'DNSSEC', title:'DNSSEC', status:'ok', score:5, max:5, text:'DNS kayıtlarınız DNSSEC ile imzalı.'};
+      return {key:'DNSSEC', title:'DNSSEC', status:'info', score:2, max:5, text:'DNSSEC etkin değil. Zorunlu değil ama DNS sahteciliğine karşı ek koruma sağlar.'};
+    });
+  }
+
+  function gradeOf(p){
+    if (p >= 90) return ['A', '#4E8A5A', 'Çok iyi'];
+    if (p >= 75) return ['B', '#6B9A5E', 'İyi, birkaç iyileştirme var'];
+    if (p >= 55) return ['C', '#B8873A', 'Orta, önemli eksikler var'];
+    if (p >= 35) return ['D', '#C2643C', 'Zayıf, risk yüksek'];
+    return ['F', '#B4473C', 'Kritik, acil önlem gerekli'];
+  }
+  var LABEL = {ok:'İYİ', warn:'GELİŞTİRİLMELİ', bad:'RİSKLİ', info:'BİLGİ'};
+
+  function render(d, results){
+    var score = 0, max = 0;
+    results.forEach(function(r){ score += r.score; max += r.max; });
+    var pct = Math.round(score * 100 / max);
+    var g = gradeOf(pct);
+    var issues = results.filter(function(r){ return r.status === 'bad' || r.status === 'warn'; });
+
+    var html = '';
+    html += '<div class="summary"><div class="grade" style="background:' + g[1] + '">' + g[0] + '</div><div>' +
+      '<h2>' + esc(d) + ' — ' + pct + ' / 100</h2><p>' + g[2] + '. ' +
+      (issues.length ? issues.length + ' konuda iyileştirme öneriyoruz.' : 'Temel e-posta ve web güvenliği ayarlarınız yerinde.') + '</p></div></div>';
+    html += '<div class="checks">';
+    results.forEach(function(r){
+      html += '<div class="check"><span class="badge b-' + r.status + '">' + LABEL[r.status] + '</span>' +
+        '<h3>' + esc(r.title) + '</h3><p>' + esc(r.text) + (r.code ? ' <code>' + esc(r.code) + '</code>' : '') + '</p></div>';
+    });
+    html += '</div>';
+
+    var lines = results.map(function(r){ return '- ' + r.title + ': ' + LABEL[r.status]; }).join('\n');
+    var msg = 'Merhaba, ' + d + ' için güvenlik kontrolü yaptım (puan: ' + pct + '/100, not: ' + g[0] + ').\n' + lines + '\nÜcretsiz detaylı değerlendirme rica ediyorum.';
+    var wa = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(msg);
+    var ml = 'mailto:' + MAIL + '?subject=' + encodeURIComponent('Güvenlik kontrolü: ' + d) + '&body=' + encodeURIComponent(msg);
+
+    html += '<div class="cta"><h2>' + (issues.length ? 'Bu eksikleri birlikte kapatalım' : 'Bir adım daha ileri gidelim') + '</h2>' +
+      '<p>Ücretsiz ön değerlendirmede ağınızı, yedeklerinizi ve güvenlik duvarınızı da inceleyip yazılı rapor sunuyoruz. Hiçbir yükümlülük doğurmaz.</p>' +
+      '<div class="btns"><a class="wa" href="' + wa + '" target="_blank" rel="noopener">WhatsApp ile rapor iste</a>' +
+      '<a class="ml" href="' + ml + '">E-posta gönder</a></div>' +
+      '<p class="contact">+90 501 051 96 60 · ' + MAIL + '</p></div>';
+
+    out.innerHTML = html;
+    out.classList.remove('hidden');
+    out.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var d = clean(input.value);
+    if (!validDomain(d)) {
+      out.innerHTML = '<div class="err">Lütfen geçerli bir alan adı yazın, örneğin <b>ornekfirma.com.tr</b>.</div>';
+      out.classList.remove('hidden');
+      return;
+    }
+    input.value = d;
+    btn.disabled = true; btn.textContent = 'Kontrol ediliyor…';
+    out.innerHTML = '<p>Kayıtlar okunuyor…</p>'; out.classList.remove('hidden');
+
+    var jobs = [checkMX(d), checkSPF(d), checkDKIM(d), checkDMARC(d), checkHTTPS(d), checkDNSSEC(d)].map(function(p){
+      return p.catch(function(){ return null; });
+    });
+    Promise.all(jobs).then(function(res){
+      var ok = res.filter(Boolean);
+      if (ok.length < 3) {
+        out.innerHTML = '<div class="err">DNS sorgusu yapılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.</div>';
+      } else {
+        render(d, ok);
+      }
+    }).then(function(){ btn.disabled = false; btn.textContent = 'Kontrol et'; });
+  });
+
+  // ?d=alanadi.com ile otomatik başlat
+  var q = new URLSearchParams(location.search).get('d');
+  if (q) { input.value = q; form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit')); }
+})();
+</script>
+</body>
+</html>
