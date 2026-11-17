@@ -47,7 +47,8 @@
       <!-- sekmeler (yalnız yönetici) -->
       <div class="pad" id="tabs" style="display:none;padding-bottom:0;border-bottom:0">
         <div class="acts" style="justify-content:flex-start">
-          <button class="btn primary" data-tab="log">Giriş kayıtları</button>
+          <button class="btn primary" data-tab="talep">Teklif talepleri</button>
+          <button class="btn" data-tab="log">Giriş kayıtları</button>
           <button class="btn" data-tab="users">Kullanıcılar</button>
           <button class="btn" data-tab="live">Açık oturumlar</button>
           <button class="btn" data-tab="usage">Yapay zeka kullanımı</button>
@@ -107,6 +108,14 @@
         <div id="usersWrap"></div>
       </section>
 
+      <!-- TEKLİF TALEPLERİ -->
+      <section class="pad" id="tab-talep" style="display:none">
+        <h2>Teklif ve hizmet talepleri</h2>
+        <div id="talepNot"></div>
+        <div class="acts" id="talepFiltre" style="justify-content:flex-start;margin:12px 0"></div>
+        <div id="talepWrap"></div>
+      </section>
+
       <!-- YAPAY ZEKA KULLANIMI -->
       <section class="pad" id="tab-usage" style="display:none">
         <h2>Bu ayki yapay zeka kullanımı</h2>
@@ -164,7 +173,7 @@
 
     if (u.role === 'admin') {
       document.getElementById('tabs').style.display = '';
-      show('log');
+      show('talep');
       loadLog(); loadUsers();
     } else {
       document.getElementById('selfView').style.display = '';
@@ -186,7 +195,7 @@
 
   /* ── sekmeler ─────────────────────────────────────── */
   function show(name){
-    ['log','users','live','usage','kvkk'].forEach(function(t){
+    ['talep','log','users','live','usage','kvkk'].forEach(function(t){
       document.getElementById('tab-' + t).style.display = (t === name ? '' : 'none');
     });
     document.querySelectorAll('#tabs .btn').forEach(function(b){
@@ -195,6 +204,7 @@
     if (name === 'live') loadLive();
     if (name === 'usage') loadUsage();
     if (name === 'kvkk') loadKvkk();
+    if (name === 'talep') loadTalep();
   }
   document.querySelectorAll('#tabs .btn').forEach(function(b){
     b.addEventListener('click', function(){ show(b.dataset.tab); });
@@ -451,6 +461,53 @@
           '<td class="hide-s dim">' + (u.son ? NP.ago(u.son) : '—') + '</td></tr>';
       }).join('') + '</tbody></table>';
   }
+
+  /* ── teklif talepleri ─────────────────────────────── */
+  var T_HIZMET = { bakim:'Aylık bakım', saglik:'BT Sağlık Raporu', ag:'Ağ / firewall', guvenlik:'Güvenlik / KVKK',
+    yazilim:'Özel yazılım', eposta:'Kurumsal e-posta', tedarik:'Tedarik', diger:'Diğer' };
+  var T_DURUM = { yeni:'Yeni', inceleniyor:'İnceleniyor', teklif:'Teklif verildi', tamamlandi:'Tamamlandı', kapandi:'Kapandı' };
+  var tFiltre = '';
+  async function loadTalep(){
+    var r = await NP.get('/api/yonetim/talepler' + (tFiltre ? '?durum=' + tFiltre : ''));
+    if (!r.ok) return;
+    var d = r.data;
+    document.getElementById('talepNot').innerHTML = d.smtp ? '' :
+      '<div class="note"><span style="color:var(--warn)">E-posta gönderimi kapalı:</span> SMTP_HOST, SMTP_USER ve SMTP_PASS tanımlanmadığı için talepler info@ adresine iletilemiyor; burada kayıtlı duruyor.</div>';
+    document.getElementById('talepFiltre').innerHTML =
+      '<button class="btn' + (tFiltre ? '' : ' primary') + '" data-f="">Tümü</button>' +
+      Object.keys(T_DURUM).map(function(k){
+        return '<button class="btn' + (tFiltre === k ? ' primary' : '') + '" data-f="' + k + '">' + T_DURUM[k] + ' (' + (d.sayilar[k] || 0) + ')</button>';
+      }).join('');
+    var w = document.getElementById('talepWrap');
+    if (!d.talepler.length){ w.innerHTML = '<div class="empty">Talep yok.</div>'; return; }
+    w.innerHTML = '<table><thead><tr><th>#</th><th>Tarih</th><th>Kişi</th><th>Hizmet</th><th class="hide-s">Mesaj</th><th>Durum</th></tr></thead><tbody>' +
+      d.talepler.map(function(t){
+        return '<tr><td class="dim">' + t.id + '</td><td class="dim">' + NP.stamp(t.olusturuldu) + '</td>' +
+          '<td>' + E(t.ad) + (t.firma ? '<div class="dim" style="font-size:10.5px">' + E(t.firma) + '</div>' : '') +
+          '<div style="font-size:11px"><a href="mailto:' + E(t.email) + '">' + E(t.email) + '</a> · <a href="tel:' + E(t.telefon) + '">' + E(t.telefon) + '</a></div></td>' +
+          '<td>' + E(T_HIZMET[t.hizmet] || t.hizmet) + (t.tercih_tarih ? '<div class="dim" style="font-size:10.5px">randevu ' + E(String(t.tercih_tarih).slice(0,10)) + '</div>' : '') +
+          '<div class="dim" style="font-size:10.5px">' + E(t.kaynak) + ' · ' + E(t.dil) + (t.eposta_ok ? ' · e-posta ✓' : '') + '</div></td>' +
+          '<td class="hide-s" style="max-width:340px;white-space:pre-wrap;font-size:12px">' + E(t.mesaj) +
+          '<textarea data-yanit="' + t.id + '" placeholder="Müşteri panelinde görünecek yanıt / not" style="width:100%;margin-top:6px;min-height:44px">' + E(t.yanit || '') + '</textarea></td>' +
+          '<td><select data-durum="' + t.id + '">' + Object.keys(T_DURUM).map(function(k){
+            return '<option value="' + k + '"' + (t.durum === k ? ' selected' : '') + '>' + T_DURUM[k] + '</option>'; }).join('') +
+          '</select><button class="btn" data-kaydet="' + t.id + '" style="margin-top:6px">Kaydet</button></td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+  document.getElementById('tab-talep').addEventListener('click', async function(e){
+    var f = e.target.closest('[data-f]');
+    if (f){ tFiltre = f.dataset.f; loadTalep(); return; }
+    var k = e.target.closest('[data-kaydet]');
+    if (!k) return;
+    var id = k.dataset.kaydet;
+    k.disabled = true; k.textContent = 'Kaydediliyor…';
+    var r = await NP.patch('/api/yonetim/talepler/' + id, {
+      durum: document.querySelector('[data-durum="' + id + '"]').value,
+      yanit: document.querySelector('[data-yanit="' + id + '"]').value
+    });
+    k.disabled = false; k.textContent = r.ok ? 'Kaydedildi' : 'Hata';
+    setTimeout(function(){ k.textContent = 'Kaydet'; }, 1500);
+  });
 })();
 </script>
 </body>

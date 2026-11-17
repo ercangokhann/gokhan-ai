@@ -7,7 +7,7 @@ const IZIN = (process.env.SITE_ORIGINS ||
   'https://gokhansoftware.com,https://www.gokhansoftware.com,https://gknsoftware.com,https://www.gknsoftware.com')
   .split(',').map((s) => s.trim()).filter(Boolean);
 
-const izinli = (o) =>
+export const izinli = (o) =>
   !!o && (IZIN.includes(o) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(o));
 
 /* ── sınırlar ── */
@@ -44,7 +44,7 @@ const FIRMA = `
 GOKHAN SOFTWARE — kurumsal yazılım, siber güvenlik ve BT hizmetleri firması.
 Web: gknsoftware.com
 Telefon: +90 501 051 96 60
-E-posta: ercangokhann@hotmail.com
+E-posta: info@gokhansoftware.com
 Sektörde 8 yıllık deneyim.
 
 GELİŞTİRDİĞİ YAZILIMLAR

@@ -2,148 +2,497 @@
 <html lang="tr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Hesabım — GOKHAN SOFTWARE</title>
-<meta name="theme-color" content="#131009">
+<title>Müşteri Paneli — GOKHAN SOFTWARE</title>
+<meta name="theme-color" content="#1B1712">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/uye.css">
+<style>
+/* Müşteri paneli — sitenin koyu vitrininden ayrı, gün içinde açık tutulacak
+   sakin bir çalışma ekranı: koyu yan menü, açık kâğıt zemin. */
+:root{
+  --kagit:#F6F2EA; --kagit-2:#EEE7DA; --kart:#FFFDF9; --cizgi:#E2D9C9; --cizgi-2:#EDE6D9;
+  --murekkep:#1F1A14; --metin:#3D352B; --soluk:#6E6456; --cok-soluk:#998E7E;
+  --yan:#1B1712; --yan-2:#262019; --yan-metin:#CFC6B8; --yan-soluk:#8E8373;
+  --kil:#C4582F; --kil-acik:#E08A63; --kil-zemin:#F7E4D9;
+  --yesil:#2F7A55; --yesil-zemin:#DFF0E6; --mavi:#2B5E99; --mavi-zemin:#E1EBF7;
+  --sari:#94660E; --sari-zemin:#F8ECCF; --gri-zemin:#ECE7DE;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--kagit);color:var(--metin);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--kil)}
+h1,h2,h3{color:var(--murekkep);margin:0;letter-spacing:-.015em}
+button{font-family:inherit}
+.duzen{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+
+/* yan menü */
+.yan{background:var(--yan);color:var(--yan-metin);display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;padding:0 8px 22px}
+.logo b{display:block;color:#F5F2EB;font-size:15px;letter-spacing:.03em}
+.logo i{display:block;font-style:normal;font-size:8px;letter-spacing:.32em;color:var(--yan-soluk)}
+.yan nav{display:flex;flex-direction:column;gap:2px}
+.yan nav button{display:flex;align-items:center;gap:11px;width:100%;background:none;border:0;color:var(--yan-metin);font-size:14px;padding:10px 12px;border-radius:8px;cursor:pointer;text-align:left}
+.yan nav button svg{flex:none;opacity:.8}
+.yan nav button:hover{background:var(--yan-2);color:#F5F2EB}
+.yan nav button.on{background:var(--kil);color:#fff}
+.yan nav button.on svg{opacity:1}
+.yan nav .rozet{margin-left:auto;background:rgba(255,255,255,.14);border-radius:10px;font-size:11.5px;padding:0 7px;line-height:19px}
+.yan .ara{height:1px;background:var(--yan-2);margin:14px 6px}
+.yan .alt{margin-top:auto;font-size:12.5px;color:var(--yan-soluk);padding:0 8px}
+.yan .alt a{color:var(--yan-metin);text-decoration:none}
+.yan .alt a:hover{color:#fff}
+.kisi{display:flex;align-items:center;gap:10px;padding:12px 8px;border-top:1px solid var(--yan-2);margin-top:12px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--kil);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:none}
+.kisi b{display:block;color:#F5F2EB;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.kisi span{font-size:12px;color:var(--yan-soluk)}
+
+/* içerik */
+main{padding:34px clamp(18px,4vw,48px) 60px;max-width:1080px}
+.bas{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:26px;flex-wrap:wrap}
+.bas h1{font-size:27px;font-weight:700}
+.bas p{margin:4px 0 0;color:var(--soluk)}
+.sayfa{display:none}.sayfa.on{display:block}
+.kart{background:var(--kart);border:1px solid var(--cizgi);border-radius:14px;padding:22px 22px}
+.kart+.kart{margin-top:16px}
+.kart h2{font-size:17px;font-weight:650}
+.kart .ac{color:var(--soluk);font-size:14px;margin:4px 0 0}
+.izgara{display:grid;gap:16px}
+.i3{grid-template-columns:repeat(3,1fr)}.i2{grid-template-columns:1fr 1fr}
+.sayi{padding:18px 20px}
+.sayi small{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--cok-soluk);font-weight:600}
+.sayi b{display:block;font-size:30px;color:var(--murekkep);letter-spacing:-.02em;margin-top:4px;line-height:1.1}
+.sayi span{font-size:13px;color:var(--soluk)}
+.islem{display:flex;gap:14px;align-items:flex-start;text-align:left;width:100%;background:var(--kart);border:1px solid var(--cizgi);border-radius:14px;padding:18px;cursor:pointer;text-decoration:none;color:inherit;transition:border-color .15s,transform .15s}
+.islem:hover{border-color:var(--kil);transform:translateY(-1px)}
+.islem .ik{width:40px;height:40px;border-radius:10px;background:var(--kil-zemin);color:var(--kil);display:flex;align-items:center;justify-content:center;flex:none}
+.islem b{display:block;color:var(--murekkep);font-size:15px}
+.islem span{display:block;font-size:13px;color:var(--soluk);margin-top:2px}
+
+/* talep listesi */
+.liste{display:flex;flex-direction:column}
+.talep{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;padding:16px 0;border-top:1px solid var(--cizgi-2)}
+.talep:first-child{border-top:0}
+.talep .no{font-family:var(--mono);font-size:12.5px;color:var(--cok-soluk);padding-top:2px}
+.talep b{color:var(--murekkep);font-size:15px}
+.talep p{margin:4px 0 0;font-size:13.5px;color:var(--soluk);white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.talep .yanit{margin-top:10px;background:var(--kagit);border-left:3px solid var(--kil);border-radius:0 8px 8px 0;padding:10px 12px;font-size:13.5px;color:var(--metin);white-space:pre-wrap}
+.talep .yanit em{display:block;font-style:normal;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--kil);font-weight:700;margin-bottom:3px}
+.talep .tarih{font-size:12.5px;color:var(--cok-soluk);margin-top:6px}
+.etiket{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.d-yeni{background:var(--mavi-zemin);color:var(--mavi)}
+.d-inceleniyor{background:var(--sari-zemin);color:var(--sari)}
+.d-teklif{background:var(--kil-zemin);color:var(--kil)}
+.d-tamamlandi{background:var(--yesil-zemin);color:var(--yesil)}
+.d-kapandi{background:var(--gri-zemin);color:var(--soluk)}
+.bos{padding:26px;text-align:center;color:var(--soluk);border:1.5px dashed var(--cizgi);border-radius:12px}
+.bos b{display:block;color:var(--murekkep);margin-bottom:4px}
+
+/* formlar */
+label{display:block;font-size:13px;font-weight:600;color:var(--metin);margin:0 0 6px}
+.alan{margin-bottom:16px}
+input,select,textarea{width:100%;background:#fff;border:1px solid var(--cizgi);border-radius:9px;color:var(--murekkep);font-family:var(--sans);font-size:15px;padding:11px 12px;outline:0}
+textarea{min-height:120px;resize:vertical;line-height:1.5}
+input:focus,select:focus,textarea:focus{border-color:var(--kil);box-shadow:0 0 0 3px var(--kil-zemin)}
+input:disabled{background:var(--kagit-2);color:var(--soluk)}
+.ipucu{font-size:12.5px;color:var(--cok-soluk);margin-top:5px}
+.iki{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.onay{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin:4px 0 18px}
+.onay input{width:auto;margin-top:3px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--kil);color:#fff;border:0;border-radius:9px;font-size:14.5px;font-weight:600;padding:11px 18px;cursor:pointer;text-decoration:none}
+.btn:hover{background:#AD4A25}
+.btn:disabled{opacity:.6;cursor:default}
+.btn.ikincil{background:#fff;color:var(--murekkep);border:1px solid var(--cizgi)}
+.btn.ikincil:hover{border-color:var(--murekkep)}
+.mesaj{display:none;border-radius:9px;padding:10px 13px;font-size:14px;margin-bottom:14px}
+.mesaj.gorun{display:block}
+.mesaj.hata{background:#FBE4DD;color:#9B3517}
+.mesaj.iyi{background:var(--yesil-zemin);color:var(--yesil)}
+.tehlike{margin-top:22px;border:1px solid #F0C9BB;background:#FFF7F3;border-radius:12px;padding:18px}
+.tehlike h3{font-size:15px;color:#9B3517}
+.tehlike p{font-size:13.5px;margin:4px 0 12px}
+
+/* sağlık raporu */
+.adimlar{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+.adim{background:var(--kagit);border-radius:10px;padding:14px}
+.adim i{font-style:normal;display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--murekkep);color:#fff;font-size:13px;font-weight:700;align-items:center;justify-content:center}
+.adim b{display:block;color:var(--murekkep);margin-top:8px;font-size:14.5px}
+.adim span{font-size:13px;color:var(--soluk)}
+
+/* alan adı kontrolü */
+.kontrol{display:flex;gap:10px}
+.kontrol input{flex:1}
+.sonuc{margin-top:16px;display:none}
+.sonuc.on{display:block}
+.satir{display:grid;grid-template-columns:24px 140px 1fr;gap:10px;align-items:start;padding:12px 0;border-top:1px solid var(--cizgi-2)}
+.satir:first-child{border-top:0}
+.satir .nokta{width:12px;height:12px;border-radius:50%;margin-top:5px}
+.n-iyi{background:var(--yesil)}.n-orta{background:#D39A1F}.n-kotu{background:#C23F1D}.n-bekle{background:var(--cizgi)}
+.satir b{color:var(--murekkep);font-size:14px}
+.satir div{font-size:13.5px;color:var(--soluk);word-break:break-word}
+.puan{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.puan b{font-size:36px;color:var(--murekkep);letter-spacing:-.02em}
+
+.ust-mobil{display:none}
+@media (max-width:860px){
+  .duzen{grid-template-columns:1fr}
+  .yan{position:fixed;inset:0 auto 0 0;width:260px;z-index:20;transform:translateX(-100%);transition:transform .2s}
+  .yan.acik{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.35)}
+  .ust-mobil{display:flex;align-items:center;justify-content:space-between;background:var(--yan);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:10}
+  .ust-mobil button{background:none;border:0;color:#fff;padding:6px}
+  .i3,.i2,.adimlar,.iki{grid-template-columns:1fr}
+  .satir{grid-template-columns:20px 1fr}.satir div{grid-column:2}
+}
+</style>
 </head><body>
-<header><div class="wrap bar">
-  <a class="logo" href="https://gokhansoftware.com"><svg width="30" height="30" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M27 12 H24 Q22 12 22 14.5 V27 Q22 32 14 32 Q22 32 22 37 V49.5 Q22 52 24 52 H27" stroke="#D97757" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 12 H40 Q42 12 42 14.5 V27 Q42 32 50 32 Q42 32 42 37 V49.5 Q42 52 40 52 H37" stroke="#D97757" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="32" r="6.4" fill="#EF9873"/></svg><span class="wm"><b>GOKHAN</b><i>SOFTWARE</i></span></a>
-  <a class="geri" href="https://gokhansoftware.com">&larr; Siteye dön</a>
-</div></header>
-
-<main class="genis"><div class="wrap"><div class="kutu genis">
-  <div class="hesap-bas">
-    <div><h1 id="selam">Hesabım</h1><p id="ozet">…</p></div>
-    <button class="btn ghost dar" id="cikis" type="button">Çıkış yap</button>
+<div class="ust-mobil"><b>GOKHAN SOFTWARE</b><button type="button" id="menuAc" aria-label="Menüyü aç"><svg width="20" height="16" viewBox="0 0 20 16" fill="none" aria-hidden="true"><path d="M0 1h20M0 8h20M0 15h20" stroke="currentColor" stroke-width="1.8"/></svg></button></div>
+<div class="duzen">
+<aside class="yan" id="yan">
+  <a class="logo" href="https://gokhansoftware.com"><svg width="30" height="30" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M27 12 H24 Q22 12 22 14.5 V27 Q22 32 14 32 Q22 32 22 37 V49.5 Q22 52 24 52 H27" stroke="#D97757" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 12 H40 Q42 12 42 14.5 V27 Q42 32 50 32 Q42 32 42 37 V49.5 Q42 52 40 52 H37" stroke="#D97757" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="32" r="6.4" fill="#EF9873"/></svg><span><b>GOKHAN</b><i>MÜŞTERİ PANELİ</i></span></a>
+  <nav id="menu">
+    <button type="button" class="on" data-s="ozet"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Genel bakış</button>
+    <button type="button" data-s="talepler"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>Taleplerim<span class="rozet" id="rozet" hidden>0</span></button>
+    <button type="button" data-s="yeni"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Yeni talep</button>
+    <button type="button" data-s="saglik"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>BT Sağlık Raporu</button>
+    <button type="button" data-s="kontrol"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>E-posta güvenliği</button>
+    <div class="ara"></div>
+    <button type="button" data-s="bilgi"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Bilgilerim</button>
+    <button type="button" data-s="guvenlik"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Şifre ve hesap</button>
+  </nav>
+  <div class="alt">
+    <p style="margin:0 0 6px">Acil durumda: <a href="tel:+905010519660">0501 051 96 60</a></p>
+    <a href="https://gokhansoftware.com">&larr; gokhansoftware.com</a>
+    <div class="kisi"><div class="avatar" id="avatar">?</div><div><b id="kisiAd">…</b><span><a href="#" id="cikis">Çıkış yap</a></span></div></div>
   </div>
-  <div class="sekme">
-    <button class="on" data-b="bilgi">Bilgilerim</button>
-    <button data-b="siparis">Siparişlerim</button>
-    <button data-b="guvenlik">Güvenlik</button>
-  </div>
+</aside>
 
-  <div class="bolum on" id="b-bilgi">
-    <div class="mesaj" id="msgBilgi"></div>
-    <form id="fBilgi" novalidate>
-      <div class="alan"><label for="ad">Ad soyad</label><input id="ad" required></div>
-      <div class="iki">
-        <div class="alan"><label for="firma">Firma</label><input id="firma"></div>
-        <div class="alan"><label for="telefon">Telefon</label><input id="telefon" type="tel"></div>
-      </div>
-      <div class="alan"><label>E-posta</label><input id="email" disabled>
-        <div class="ipucu">E-posta adresini değiştirmek için bizimle iletişime geçin.</div></div>
-      <label class="onay"><input type="checkbox" id="izin">
-        <span>Yeni ürün ve kampanyalardan e-posta ile haberdar olmak istiyorum.</span></label>
-      <button class="btn dar" type="submit" id="btnBilgi">Kaydet</button>
-    </form>
-  </div>
+<main>
+  <!-- GENEL BAKIŞ -->
+  <section class="sayfa on" id="s-ozet">
+    <div class="bas"><div><h1 id="selam">Hoş geldiniz</h1><p id="altBas">Talepleriniz, randevularınız ve hesabınız tek yerde.</p></div>
+      <button class="btn" type="button" data-git="yeni">Yeni talep oluştur</button></div>
+    <div class="izgara i3">
+      <div class="kart sayi"><small>Açık talepler</small><b id="sAcik">–</b><span>yanıt ya da işlem bekleyen</span></div>
+      <div class="kart sayi"><small>Toplam talep</small><b id="sToplam">–</b><span id="sSon">henüz talep yok</span></div>
+      <div class="kart sayi"><small>Üyelik</small><b id="sUye" style="font-size:22px;margin-top:8px">–</b><span id="sUyeAlt"></span></div>
+    </div>
+    <h2 style="font-size:16px;margin:28px 0 12px">Hızlı işlemler</h2>
+    <div class="izgara i2">
+      <button class="islem" type="button" data-git="saglik"><span class="ik"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span><span><b>Ücretsiz BT Sağlık Raporu</b><span>1 saatlik ziyaret, 2 iş günü içinde yazılı rapor. Randevu alın.</span></span></button>
+      <button class="islem" type="button" data-git="kontrol"><span class="ik"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span><b>E-posta güvenliğini kontrol edin</b><span>Alan adınızın SPF, DMARC ve MX kayıtları hemen burada.</span></span></button>
+      <button class="islem" type="button" data-git="yeni"><span class="ik"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span><span><b>Teklif ya da destek isteyin</b><span>Bakım, ağ, güvenlik, yazılım ya da donanım talebi.</span></span></button>
+      <a class="islem" href="https://wa.me/905010519660" target="_blank" rel="noopener"><span class="ik"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg></span><span><b>WhatsApp'tan yazın</b><span>Acil bir sorun için doğrudan 0501 051 96 60.</span></span></a>
+    </div>
+    <div class="kart" style="margin-top:22px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2>Son talepler</h2><a href="#" data-git="talepler" style="font-size:13.5px">Tümünü görün &rarr;</a></div>
+      <div class="liste" id="sonListe" style="margin-top:8px"></div>
+    </div>
+  </section>
 
-  <div class="bolum" id="b-siparis">
-    <div class="bos"><b>Henüz siparişiniz yok.</b>
-      Ürün satışı yakında açılıyor. Açıldığında siparişleriniz, faturalarınız ve
-      lisans yenileme tarihleriniz burada listelenecek.</div>
-  </div>
+  <!-- TALEPLERİM -->
+  <section class="sayfa" id="s-talepler">
+    <div class="bas"><div><h1>Taleplerim</h1><p>Sitedeki formdan ya da bu panelden gönderdiğiniz tüm talepler ve yanıtlarımız.</p></div>
+      <button class="btn" type="button" data-git="yeni">Yeni talep</button></div>
+    <div class="kart"><div class="liste" id="tumListe"></div></div>
+  </section>
 
-  <div class="bolum" id="b-guvenlik">
-    <div class="mesaj" id="msgSifre"></div>
-    <form id="fSifre" novalidate>
-      <div class="alan"><label for="eski">Mevcut şifre</label>
-        <input id="eski" type="password" autocomplete="current-password" required></div>
-      <div class="alan"><label for="yeni">Yeni şifre</label>
-        <input id="yeni" type="password" autocomplete="new-password" required>
-        <div class="ipucu">En az 12 karakter. Değiştirdiğinizde diğer cihazlardaki oturumlar kapanır.</div></div>
-      <button class="btn dar" type="submit" id="btnSifre">Şifreyi değiştir</button>
-    </form>
-    <div class="tehlike">
-      <h3>Hesabı kapat</h3>
-      <p>Hesabınız ve kayıtlı bilgileriniz kalıcı olarak silinir. Bu işlem geri alınamaz.</p>
-      <div class="mesaj" id="msgKapat"></div>
-      <form id="fKapat" novalidate>
-        <div class="alan"><label for="kSifre">Şifrenizi yazın</label>
-          <input id="kSifre" type="password" required></div>
-        <button class="btn ghost dar" type="submit" id="btnKapat">Hesabımı kalıcı olarak kapat</button>
+  <!-- YENİ TALEP -->
+  <section class="sayfa" id="s-yeni">
+    <div class="bas"><div><h1>Yeni talep</h1><p>Aynı iş günü içinde dönüş yapıyoruz. Bilgileriniz hesabınızdan otomatik eklenir.</p></div></div>
+    <div class="kart" style="max-width:720px">
+      <div class="mesaj" id="msgYeni"></div>
+      <form id="fYeni" novalidate>
+        <div class="alan"><label for="yHizmet">Hizmet türü</label>
+          <select id="yHizmet" required>
+            <option value="">Seçin…</option>
+            <option value="bakim">Aylık BT bakımı ve destek</option>
+            <option value="saglik">Ücretsiz BT Sağlık Raporu</option>
+            <option value="ag">Ağ ve güvenlik duvarı kurulumu</option>
+            <option value="guvenlik">Siber güvenlik ve KVKK</option>
+            <option value="yazilim">Size özel yazılım</option>
+            <option value="eposta">Kurumsal e-posta</option>
+            <option value="tedarik">Donanım ve lisans tedariki</option>
+            <option value="diger">Diğer</option>
+          </select></div>
+        <div class="iki">
+          <div class="alan"><label for="yTel">Telefon</label><input id="yTel" type="tel" autocomplete="tel"></div>
+          <div class="alan"><label for="yFirma">Firma</label><input id="yFirma" autocomplete="organization"></div>
+        </div>
+        <div class="alan"><label for="yMesaj">Mesajınız</label>
+          <textarea id="yMesaj" required placeholder="İhtiyacınızı birkaç cümleyle anlatın: kaç kişi/bilgisayar, ne zaman, şu an ne kullanıyorsunuz…"></textarea></div>
+        <button class="btn" type="submit" id="btnYeni">Talebi gönder</button>
       </form>
     </div>
-  </div>
-</div></div></main>
-<footer><div class="wrap f-ic">
-  <span>&copy; <span id="yil">2026</span> GOKHAN SOFTWARE</span>
-  <span><a href="https://gokhansoftware.com/iletisim.html">İletişim</a> &middot; <a href="https://gokhansoftware.com">gokhansoftware.com</a></span>
-</div></footer>
+  </section>
+
+  <!-- BT SAĞLIK RAPORU -->
+  <section class="sayfa" id="s-saglik">
+    <div class="bas"><div><h1>BT Sağlık Raporu</h1><p>Ücretsiz ve yükümlülüksüz. Ofisinizde 9 alanda 30 noktayı kontrol ediyoruz.</p></div></div>
+    <div class="kart">
+      <h2>Nasıl işliyor</h2>
+      <div class="adimlar">
+        <div class="adim"><i>1</i><b>Randevu</b><span>Aşağıdan size uygun günü seçin; aynı gün sizi arayıp teyit ediyoruz.</span></div>
+        <div class="adim"><i>2</i><b>1 saatlik inceleme</b><span>Ağ, yedek, e-posta, bilgisayarlar ve KVKK teknik önlemleri.</span></div>
+        <div class="adim"><i>3</i><b>Yazılı rapor</b><span>2 iş günü içinde puanlı rapor ve önce yapılacak 5 madde.</span></div>
+      </div>
+    </div>
+    <div class="kart" style="max-width:720px">
+      <h2>Randevu isteyin</h2>
+      <p class="ac">Saldırı yok, dosya açmak yok; ziyaret öncesi gizlilik formunu birlikte imzalıyoruz.</p>
+      <div class="mesaj" id="msgSaglik" style="margin-top:14px"></div>
+      <form id="fSaglik" novalidate style="margin-top:14px">
+        <div class="iki">
+          <div class="alan"><label for="rTarih">Tercih ettiğiniz gün</label><input id="rTarih" type="date" required></div>
+          <div class="alan"><label for="rSaat">Saat aralığı</label>
+            <select id="rSaat"><option>09:00 – 12:00</option><option>12:00 – 15:00</option><option>15:00 – 18:00</option></select></div>
+        </div>
+        <div class="iki">
+          <div class="alan"><label for="rKisi">Bilgisayar sayısı</label><input id="rKisi" type="number" min="1" max="999" placeholder="ör. 12"></div>
+          <div class="alan"><label for="rTel">Telefon</label><input id="rTel" type="tel"></div>
+        </div>
+        <div class="alan"><label for="rAdres">Ofis adresi ve not</label>
+          <textarea id="rAdres" style="min-height:90px" placeholder="İlçe, adres ve varsa yaşadığınız sorunlar"></textarea></div>
+        <button class="btn" type="submit" id="btnSaglik">Randevu iste</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- E-POSTA GÜVENLİĞİ -->
+  <section class="sayfa" id="s-kontrol">
+    <div class="bas"><div><h1>E-posta güvenliği kontrolü</h1><p>Firmanız adına sahte e-posta gönderilip gönderilemeyeceğini alan adı kayıtlarından kontrol eder.</p></div></div>
+    <div class="kart" style="max-width:820px">
+      <form id="fKontrol" class="kontrol" novalidate>
+        <input id="alan" placeholder="firmaniz.com.tr" autocomplete="off" aria-label="Alan adı">
+        <button class="btn" type="submit" id="btnKontrol">Kontrol et</button>
+      </form>
+      <div class="ipucu">Herkese açık DNS kayıtlarına bakılır; sistemlerinize hiçbir şey gönderilmez.</div>
+      <div class="sonuc" id="sonuc">
+        <div class="puan" style="margin-top:18px"><b id="puan">–</b><span id="puanAlt"></span></div>
+        <div id="satirlar"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+          <button class="btn" type="button" id="kontrolTalep">Eksikleri düzeltmemiz için talep açın</button>
+          <a class="btn ikincil" id="tamRapor" href="https://gokhansoftware.com/guvenlik-kontrolu.html" target="_blank" rel="noopener">Ayrıntılı test sayfası</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BİLGİLERİM -->
+  <section class="sayfa" id="s-bilgi">
+    <div class="bas"><div><h1>Bilgilerim</h1><p id="ozet">…</p></div></div>
+    <div class="kart" style="max-width:720px">
+      <div class="mesaj" id="msgBilgi"></div>
+      <form id="fBilgi" novalidate>
+        <div class="alan"><label for="ad">Ad soyad</label><input id="ad" required></div>
+        <div class="iki">
+          <div class="alan"><label for="firma">Firma</label><input id="firma"></div>
+          <div class="alan"><label for="telefon">Telefon</label><input id="telefon" type="tel"></div>
+        </div>
+        <div class="alan"><label for="email">E-posta</label><input id="email" disabled>
+          <div class="ipucu">E-posta adresini değiştirmek için info@gokhansoftware.com adresine yazın.</div></div>
+        <label class="onay"><input type="checkbox" id="izin"><span>Yeni hizmet ve kampanyalardan e-posta ile haberdar olmak istiyorum.</span></label>
+        <button class="btn" type="submit" id="btnBilgi">Kaydet</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ŞİFRE VE HESAP -->
+  <section class="sayfa" id="s-guvenlik">
+    <div class="bas"><div><h1>Şifre ve hesap</h1><p>Şifrenizi değiştirin ya da hesabınızı kapatın.</p></div></div>
+    <div class="kart" style="max-width:720px">
+      <div class="mesaj" id="msgSifre"></div>
+      <form id="fSifre" novalidate>
+        <div class="alan"><label for="eski">Mevcut şifre</label><input id="eski" type="password" autocomplete="current-password" required></div>
+        <div class="alan"><label for="yeni">Yeni şifre</label><input id="yeni" type="password" autocomplete="new-password" required>
+          <div class="ipucu">En az 12 karakter. Değiştirdiğinizde diğer cihazlardaki oturumlar kapanır.</div></div>
+        <button class="btn" type="submit" id="btnSifre">Şifreyi değiştir</button>
+      </form>
+      <div class="tehlike">
+        <h3>Hesabı kapat</h3>
+        <p>Hesabınız ve kayıtlı bilgileriniz kalıcı olarak silinir. Bu işlem geri alınamaz.</p>
+        <div class="mesaj" id="msgKapat"></div>
+        <form id="fKapat" novalidate>
+          <div class="alan"><label for="kSifre">Şifrenizi yazın</label><input id="kSifre" type="password" required></div>
+          <button class="btn ikincil" type="submit" id="btnKapat">Hesabımı kalıcı olarak kapat</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+</div>
+
 <script src="/uye.js"></script>
-<script>document.getElementById('yil').textContent=new Date().getFullYear();</script>
 <script>
 (async function(){
-  var uye = null;
+  var HIZMET = { bakim:'Aylık BT bakımı ve destek', saglik:'Ücretsiz BT Sağlık Raporu', ag:'Ağ ve güvenlik duvarı kurulumu',
+    guvenlik:'Siber güvenlik ve KVKK', yazilim:'Size özel yazılım', eposta:'Kurumsal e-posta', tedarik:'Donanım ve lisans tedariki', diger:'Diğer' };
+  var DURUM = { yeni:'Alındı', inceleniyor:'İnceleniyor', teklif:'Teklif verildi', tamamlandi:'Tamamlandı', kapandi:'Kapandı' };
+  var $ = function(id){ return document.getElementById(id); };
+  var E = UYE.esc;
+
   var r = await UYE.get('/api/uye/ben');
   if (!r.ok) { location.href = '/uye/giris'; return; }
-  uye = r.veri.uye;
-  yaz();
+  var uye = r.veri.uye, talepler = [];
+  yazKisi();
+  yukleTalepler();
 
-  function yaz(){
-    document.getElementById('selam').textContent =
-      'Merhaba, ' + (uye.ad ? uye.ad.split(' ')[0] : 'hoş geldiniz');
-    document.getElementById('ozet').textContent =
-      uye.email + ' · üyelik ' + UYE.tarih(uye.olusturuldu);
-    document.getElementById('ad').value = uye.ad || '';
-    document.getElementById('firma').value = uye.firma || '';
-    document.getElementById('telefon').value = uye.telefon || '';
-    document.getElementById('email').value = uye.email || '';
-    document.getElementById('izin').checked = !!uye.izinEposta;
+  /* ── gezinme ── */
+  function git(ad){
+    document.querySelectorAll('.sayfa').forEach(function(s){ s.classList.toggle('on', s.id === 's-' + ad); });
+    document.querySelectorAll('#menu button').forEach(function(b){ b.classList.toggle('on', b.dataset.s === ad); });
+    $('yan').classList.remove('acik');
+    if (location.hash !== '#' + ad) history.replaceState(null, '', '#' + ad);
+    window.scrollTo(0, 0);
+  }
+  $('menu').addEventListener('click', function(e){ var b = e.target.closest('button[data-s]'); if (b) git(b.dataset.s); });
+  document.addEventListener('click', function(e){ var a = e.target.closest('[data-git]'); if (a){ e.preventDefault(); git(a.dataset.git); } });
+  $('menuAc').addEventListener('click', function(){ $('yan').classList.toggle('acik'); });
+  var ilk = (location.hash || '').slice(1);
+  if (ilk && $('s-' + ilk)) git(ilk);
+
+  $('cikis').addEventListener('click', async function(e){ e.preventDefault(); await UYE.post('/api/uye/cikis'); location.href = '/uye/giris'; });
+
+  function yazKisi(){
+    var ilkAd = uye.ad ? uye.ad.split(' ')[0] : '';
+    $('selam').textContent = ilkAd ? 'Merhaba, ' + ilkAd : 'Hoş geldiniz';
+    $('kisiAd').textContent = uye.ad || uye.email;
+    $('avatar').textContent = (uye.ad || uye.email || '?').trim().charAt(0).toUpperCase();
+    $('sUye').textContent = UYE.tarih(uye.olusturuldu);
+    $('sUyeAlt').textContent = uye.firma ? uye.firma : 'firma bilgisi eklenmedi';
+    $('ozet').textContent = uye.email + ' · üyelik ' + UYE.tarih(uye.olusturuldu);
+    $('ad').value = uye.ad || ''; $('firma').value = uye.firma || ''; $('telefon').value = uye.telefon || '';
+    $('email').value = uye.email || ''; $('izin').checked = !!uye.izinEposta;
+    if (!$('yTel').value) $('yTel').value = uye.telefon || '';
+    if (!$('yFirma').value) $('yFirma').value = uye.firma || '';
+    if (!$('rTel').value) $('rTel').value = uye.telefon || '';
   }
 
-  document.querySelector('.sekme').addEventListener('click', function(e){
-    var b = e.target.closest('button[data-b]'); if (!b) return;
-    document.querySelectorAll('.sekme button').forEach(function(x){ x.classList.remove('on'); });
-    document.querySelectorAll('.bolum').forEach(function(x){ x.classList.remove('on'); });
-    b.classList.add('on');
-    document.getElementById('b-' + b.dataset.b).classList.add('on');
-  });
-
-  document.getElementById('cikis').addEventListener('click', async function(){
-    await UYE.post('/api/uye/cikis'); location.href = '/uye/giris';
-  });
-
-  document.getElementById('fBilgi').addEventListener('submit', async function(e){
-    e.preventDefault();
-    var btn = document.getElementById('btnBilgi');
-    UYE.mesaj('msgBilgi',''); UYE.mesgul(btn, true, 'Kaydediliyor…');
-    var s = await UYE.patch('/api/uye/ben', {
-      ad: document.getElementById('ad').value,
-      firma: document.getElementById('firma').value,
-      telefon: document.getElementById('telefon').value,
-      izinEposta: document.getElementById('izin').checked
-    });
+  /* ── talepler ── */
+  function talepHtml(t){
+    return '<div class="talep"><span class="no">#' + t.id + '</span><div><b>' + E(HIZMET[t.hizmet] || t.hizmet) + '</b>' +
+      '<p>' + E(t.mesaj) + '</p>' +
+      (t.yanit ? '<div class="yanit"><em>Yanıtımız</em>' + E(t.yanit) + '</div>' : '') +
+      '<div class="tarih">' + UYE.tarih(t.olusturuldu) + (t.tercihTarih ? ' · randevu tercihi ' + UYE.tarih(t.tercihTarih) : '') + '</div></div>' +
+      '<span class="etiket d-' + E(t.durum) + '">' + E(DURUM[t.durum] || t.durum) + '</span></div>';
+  }
+  async function yukleTalepler(){
+    var s = await UYE.get('/api/uye/talepler');
+    talepler = s.ok ? s.veri.talepler : [];
+    var acik = talepler.filter(function(t){ return ['yeni','inceleniyor','teklif'].indexOf(t.durum) >= 0; }).length;
+    $('sAcik').textContent = acik; $('sToplam').textContent = talepler.length;
+    $('sSon').textContent = talepler.length ? 'son talep ' + UYE.tarih(talepler[0].olusturuldu) : 'henüz talep yok';
+    $('rozet').hidden = !acik; $('rozet').textContent = acik;
+    var bos = '<div class="bos"><b>Henüz talebiniz yok.</b>Bir ihtiyacınız olduğunda “Yeni talep” ile birkaç saniyede iletebilirsiniz.</div>';
+    $('sonListe').innerHTML = talepler.length ? talepler.slice(0, 3).map(talepHtml).join('') : bos;
+    $('tumListe').innerHTML = talepler.length ? talepler.map(talepHtml).join('') : bos;
+  }
+  async function talepGonder(veri, btn, msgId, form){
+    UYE.mesaj(msgId, ''); UYE.mesgul(btn, true, 'Gönderiliyor…');
+    var s = await UYE.post('/api/uye/talepler', veri);
     UYE.mesgul(btn, false);
-    if (s.ok) { uye = s.veri.uye; yaz(); UYE.mesaj('msgBilgi','Kaydedildi.','iyi'); }
+    if (!s.ok) { UYE.mesaj(msgId, s.veri.error || 'Gönderilemedi.'); return false; }
+    if (form) form.reset();
+    UYE.mesaj(msgId, 'Talebiniz alındı (#' + s.veri.talep.id + '). Aynı iş günü içinde dönüş yapacağız.', 'iyi');
+    yazKisi(); yukleTalepler();
+    return true;
+  }
+
+  $('fYeni').addEventListener('submit', function(e){
+    e.preventDefault();
+    talepGonder({ hizmet: $('yHizmet').value, telefon: $('yTel').value, firma: $('yFirma').value, mesaj: $('yMesaj').value, sayfa: 'panel/yeni' },
+      $('btnYeni'), 'msgYeni', $('fYeni'));
+  });
+
+  var yarin = new Date(Date.now() + 864e5).toISOString().slice(0, 10);
+  $('rTarih').min = yarin;
+  $('fSaglik').addEventListener('submit', function(e){
+    e.preventDefault();
+    if (!$('rTarih').value) { UYE.mesaj('msgSaglik', 'Tercih ettiğiniz günü seçin.'); return; }
+    var m = 'BT Sağlık Raporu randevu talebi.\nSaat aralığı: ' + $('rSaat').value +
+      ($('rKisi').value ? '\nBilgisayar sayısı: ' + $('rKisi').value : '') +
+      ($('rAdres').value.trim() ? '\nAdres / not: ' + $('rAdres').value.trim() : '');
+    talepGonder({ hizmet: 'saglik', tarih: $('rTarih').value, telefon: $('rTel').value, mesaj: m, sayfa: 'panel/saglik' },
+      $('btnSaglik'), 'msgSaglik', $('fSaglik'));
+  });
+
+  /* ── e-posta güvenliği: herkese açık DNS üzerinden ── */
+  var sonKontrol = null;
+  async function dns(ad, tip){
+    try {
+      var r = await fetch('https://dns.google/resolve?name=' + encodeURIComponent(ad) + '&type=' + tip);
+      var d = await r.json();
+      return (d.Answer || []).filter(function(a){ return a.type === ({TXT:16,MX:15}[tip]); }).map(function(a){ return String(a.data).replace(/^"|"$/g,'').replace(/" "/g,''); });
+    } catch (e) { return null; }
+  }
+  function satir(renk, ad, aciklama){
+    return '<div class="satir"><span class="nokta n-' + renk + '"></span><b>' + ad + '</b><div>' + aciklama + '</div></div>';
+  }
+  $('fKontrol').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var alan = $('alan').value.trim().toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0];
+    if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(alan)) { $('alan').focus(); return; }
+    var btn = $('btnKontrol'); UYE.mesgul(btn, true, 'Kontrol ediliyor…');
+    var sonuc = await Promise.all([dns(alan,'MX'), dns(alan,'TXT'), dns('_dmarc.' + alan,'TXT')]);
+    UYE.mesgul(btn, false);
+    var mx = sonuc[0], txt = sonuc[1], dm = sonuc[2];
+    if (mx === null) { $('satirlar').innerHTML = satir('kotu','Bağlantı','DNS sorgusu yapılamadı. Biraz sonra tekrar deneyin.'); $('sonuc').classList.add('on'); return; }
+    var spf = (txt || []).filter(function(t){ return /^v=spf1/i.test(t); })[0];
+    var dmarc = (dm || []).filter(function(t){ return /^v=DMARC1/i.test(t); })[0];
+    var puan = 0, html = '', eksik = [];
+    if (mx.length) { puan += 30; html += satir('iyi','MX (posta sunucusu)', E(mx.map(function(m){ return m.split(' ').pop(); }).join(', '))); }
+    else { html += satir('kotu','MX (posta sunucusu)','Kayıt yok: bu alan adına e-posta gelmiyor olabilir.'); eksik.push('MX'); }
+    if (spf) {
+      var sert = /-all\s*$/i.test(spf), yumusak = /~all\s*$/i.test(spf);
+      puan += sert ? 35 : yumusak ? 25 : 10;
+      html += satir(sert ? 'iyi' : yumusak ? 'orta' : 'kotu', 'SPF', E(spf) + (sert ? '' : yumusak ? '<br>Yumuşak kural (~all): sahte mailler çoğu zaman yine de ulaşabilir.' : '<br>Kural zayıf: sahte e-posta engellenmiyor.'));
+      if (!sert) eksik.push('SPF sıkılaştırma');
+    } else { html += satir('kotu','SPF','Kayıt yok: firmanız adına herkes e-posta gönderebilir.'); eksik.push('SPF'); }
+    if (dmarc) {
+      var p = (dmarc.match(/p=(\w+)/i) || [])[1] || 'none';
+      puan += p === 'reject' ? 35 : p === 'quarantine' ? 28 : 12;
+      html += satir(p === 'none' ? 'orta' : 'iyi', 'DMARC', E(dmarc) + (p === 'none' ? '<br>Yalnızca izleme modunda (p=none): sahte mailler engellenmiyor.' : ''));
+      if (p === 'none') eksik.push('DMARC politikası');
+    } else { html += satir('kotu','DMARC','Kayıt yok: alıcılar sahte e-postayı ayırt edemez.'); eksik.push('DMARC'); }
+    $('puan').textContent = puan + '/100';
+    $('puanAlt').textContent = alan + ' · ' + (puan >= 85 ? 'iyi durumda' : puan >= 55 ? 'eksikler var' : 'riskli');
+    $('satirlar').innerHTML = html;
+    $('tamRapor').href = 'https://gokhansoftware.com/guvenlik-kontrolu.html?d=' + encodeURIComponent(alan);
+    $('kontrolTalep').style.display = eksik.length ? '' : 'none';
+    sonKontrol = { alan: alan, puan: puan, eksik: eksik };
+    $('sonuc').classList.add('on');
+  });
+  $('kontrolTalep').addEventListener('click', function(){
+    if (!sonKontrol) return;
+    $('yHizmet').value = 'eposta';
+    $('yMesaj').value = sonKontrol.alan + ' alan adı için e-posta güvenliği kontrolü ' + sonKontrol.puan + '/100 çıktı. Eksikler: ' +
+      sonKontrol.eksik.join(', ') + '. Düzeltilmesi için destek istiyorum.';
+    git('yeni');
+  });
+
+  /* ── bilgiler ve şifre ── */
+  $('fBilgi').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var btn = $('btnBilgi'); UYE.mesaj('msgBilgi',''); UYE.mesgul(btn, true, 'Kaydediliyor…');
+    var s = await UYE.patch('/api/uye/ben', { ad: $('ad').value, firma: $('firma').value, telefon: $('telefon').value, izinEposta: $('izin').checked });
+    UYE.mesgul(btn, false);
+    if (s.ok) { uye = s.veri.uye; yazKisi(); UYE.mesaj('msgBilgi','Kaydedildi.','iyi'); }
     else UYE.mesaj('msgBilgi', s.veri.error || 'Kaydedilemedi.');
   });
-
-  document.getElementById('fSifre').addEventListener('submit', async function(e){
+  $('fSifre').addEventListener('submit', async function(e){
     e.preventDefault();
-    var btn = document.getElementById('btnSifre');
-    UYE.mesaj('msgSifre',''); UYE.mesgul(btn, true, 'Değiştiriliyor…');
-    var s = await UYE.post('/api/uye/sifre', {
-      eski: document.getElementById('eski').value,
-      yeni: document.getElementById('yeni').value
-    });
+    var btn = $('btnSifre'); UYE.mesaj('msgSifre',''); UYE.mesgul(btn, true, 'Değiştiriliyor…');
+    var s = await UYE.post('/api/uye/sifre', { eski: $('eski').value, yeni: $('yeni').value });
     UYE.mesgul(btn, false);
-    if (s.ok) {
-      document.getElementById('fSifre').reset();
-      UYE.mesaj('msgSifre','Şifreniz değişti. Diğer cihazlardaki oturumlar kapatıldı.','iyi');
-    } else UYE.mesaj('msgSifre', s.veri.error || 'Değiştirilemedi.');
+    if (s.ok) { $('fSifre').reset(); UYE.mesaj('msgSifre','Şifreniz değişti. Diğer cihazlardaki oturumlar kapatıldı.','iyi'); }
+    else UYE.mesaj('msgSifre', s.veri.error || 'Değiştirilemedi.');
   });
-
-  document.getElementById('fKapat').addEventListener('submit', async function(e){
+  $('fKapat').addEventListener('submit', async function(e){
     e.preventDefault();
     if (!confirm('Hesabınız ve tüm bilgileriniz kalıcı olarak silinecek. Emin misiniz?')) return;
-    var btn = document.getElementById('btnKapat');
-    UYE.mesaj('msgKapat',''); UYE.mesgul(btn, true, 'Kapatılıyor…');
-    var s = await UYE.post('/api/uye/kapat', { sifre: document.getElementById('kSifre').value });
+    var btn = $('btnKapat'); UYE.mesaj('msgKapat',''); UYE.mesgul(btn, true, 'Kapatılıyor…');
+    var s = await UYE.post('/api/uye/kapat', { sifre: $('kSifre').value });
     UYE.mesgul(btn, false);
-    if (s.ok) location.href = UYE.site;
-    else UYE.mesaj('msgKapat', s.veri.error || 'Kapatılamadı.');
+    if (s.ok) location.href = UYE.site; else UYE.mesaj('msgKapat', s.veri.error || 'Kapatılamadı.');
   });
 })();
 </script>

@@ -1,6 +1,8 @@
 import pg from 'pg';
 
 const { Pool } = pg;
+// DATE sütunları saat dilimi kaymasın diye 'YYYY-MM-DD' metni olarak gelsin
+pg.types.setTypeParser(1082, (v) => v);
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {

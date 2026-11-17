@@ -182,38 +182,77 @@
     if (!el) return;
     var dil = (document.documentElement.lang || 'tr').slice(0, 2);
 
-    var Y = {                                    // yorum satırları
-      tr: ['// rücu dosyası açılıyor', '// taksitler hesaplanıyor', '// eski kayıtlar taşınıyor'],
-      en: ['// opening a recourse file', '// calculating instalments', '// migrating legacy records'],
-      de: ['// Regressakte wird angelegt', '// Raten werden berechnet', '// Altdaten werden übernommen']
-    }[dil] || null;
-    if (!Y) Y = ['// rücu dosyası açılıyor', '// taksitler hesaplanıyor', '// eski kayıtlar taşınıyor'];
-
-    /* Gösterilecek kod blokları. Her parça [sınıf, metin]. */
-    var bloklar = [
-      [['y', Y[0] + '\n'],
-       ['k', 'const '], ['', 'dosya = '], ['k', 'await '], ['f', 'ac'], ['', '({\n'],
-       ['', '  borclu: '], ['s', "'Yılmaz Nakliyat Ltd.'"], ['', ',\n'],
-       ['', '  alacak: '], ['n', '462000'], ['', ',\n'],
-       ['', '  taksit:  '], ['n', '12'], ['', ',\n'],
-       ['', '});\n\n'],
-       ['f', 'takipBaslat'], ['', '(dosya);']],
-
-      [['y', Y[1] + '\n'],
-       ['k', 'for '], ['', '(const t '], ['k', 'of '], ['', 'dosya.taksitler) {\n'],
-       ['', '  t.faiz = '], ['f', 'hesapla'], ['', '(t, '], ['s', "'yasal'"], ['', ');\n'],
-       ['', '  '], ['k', 'if '], ['', '(t.gecikti) '], ['f', 'uyar'], ['', '(t);\n'],
-       ['', '}\n\n'],
-       ['f', 'kaydet'], ['', '(dosya); '], ['y', '// tek ekranda']],
-
-      [['y', Y[2] + '\n'],
-       ['k', 'const '], ['', 'eski = '], ['k', 'await '], ['f', 'oku'], ['', '('], ['s', "'legacy.sql'"], ['', ');\n'],
-       ['k', 'const '], ['', 'sonuc = '], ['k', 'await '], ['f', 'tasi'], ['', '(eski, {\n'],
-       ['', '  dogrula: '], ['k', 'true'], ['', ',\n'],
-       ['', '  kayip:   '], ['n', '0'], ['', ',\n'],
-       ['', '});\n\n'],
-       ['y', '// 1.284 dosya, tek satır kayıp yok']]
-    ];
+    /* Her dil kendi kod bloğunu taşır: yorumlar, değişken adları ve örnek
+       veriler o dilde. Bilinmeyen dil Türkçe'ye düşer. Her parça [sınıf, metin]. */
+    var KOD = {
+      tr: [
+        [['y', '// rücu dosyası açılıyor\n'],
+         ['k', 'const '], ['', 'dosya = '], ['k', 'await '], ['f', 'ac'], ['', '({\n'],
+         ['', '  borclu: '], ['s', "'Yılmaz Nakliyat Ltd.'"], ['', ',\n'],
+         ['', '  alacak: '], ['n', '462000'], ['', ',\n'],
+         ['', '  taksit:  '], ['n', '12'], ['', ',\n'],
+         ['', '});\n\n'],
+         ['f', 'takipBaslat'], ['', '(dosya);']],
+        [['y', '// taksitler hesaplanıyor\n'],
+         ['k', 'for '], ['', '(const t '], ['k', 'of '], ['', 'dosya.taksitler) {\n'],
+         ['', '  t.faiz = '], ['f', 'hesapla'], ['', '(t, '], ['s', "'yasal'"], ['', ');\n'],
+         ['', '  '], ['k', 'if '], ['', '(t.gecikti) '], ['f', 'uyar'], ['', '(t);\n'],
+         ['', '}\n\n'],
+         ['f', 'kaydet'], ['', '(dosya); '], ['y', '// tek ekranda']],
+        [['y', '// eski kayıtlar taşınıyor\n'],
+         ['k', 'const '], ['', 'eski = '], ['k', 'await '], ['f', 'oku'], ['', '('], ['s', "'legacy.sql'"], ['', ');\n'],
+         ['k', 'const '], ['', 'sonuc = '], ['k', 'await '], ['f', 'tasi'], ['', '(eski, {\n'],
+         ['', '  dogrula: '], ['k', 'true'], ['', ',\n'],
+         ['', '  kayip:   '], ['n', '0'], ['', ',\n'],
+         ['', '});\n\n'],
+         ['y', '// 1.284 dosya, tek satır kayıp yok']]
+      ],
+      en: [
+        [['y', '// opening a recourse file\n'],
+         ['k', 'const '], ['', 'file = '], ['k', 'await '], ['f', 'open'], ['', '({\n'],
+         ['', '  debtor: '], ['s', "'Northwind Logistics Ltd.'"], ['', ',\n'],
+         ['', '  claim:  '], ['n', '462000'], ['', ',\n'],
+         ['', '  instalments: '], ['n', '12'], ['', ',\n'],
+         ['', '});\n\n'],
+         ['f', 'startCollection'], ['', '(file);']],
+        [['y', '// calculating instalments\n'],
+         ['k', 'for '], ['', '(const i '], ['k', 'of '], ['', 'file.instalments) {\n'],
+         ['', '  i.interest = '], ['f', 'calculate'], ['', '(i, '], ['s', "'statutory'"], ['', ');\n'],
+         ['', '  '], ['k', 'if '], ['', '(i.overdue) '], ['f', 'notify'], ['', '(i);\n'],
+         ['', '}\n\n'],
+         ['f', 'save'], ['', '(file); '], ['y', '// one screen']],
+        [['y', '// migrating legacy records\n'],
+         ['k', 'const '], ['', 'legacy = '], ['k', 'await '], ['f', 'read'], ['', '('], ['s', "'legacy.sql'"], ['', ');\n'],
+         ['k', 'const '], ['', 'result = '], ['k', 'await '], ['f', 'migrate'], ['', '(legacy, {\n'],
+         ['', '  verify: '], ['k', 'true'], ['', ',\n'],
+         ['', '  lost:   '], ['n', '0'], ['', ',\n'],
+         ['', '});\n\n'],
+         ['y', '// 1,284 files, not a single row lost']]
+      ],
+      de: [
+        [['y', '// Regressakte wird angelegt\n'],
+         ['k', 'const '], ['', 'akte = '], ['k', 'await '], ['f', 'anlegen'], ['', '({\n'],
+         ['', '  schuldner: '], ['s', "'Nordwind Spedition GmbH'"], ['', ',\n'],
+         ['', '  forderung: '], ['n', '462000'], ['', ',\n'],
+         ['', '  raten:     '], ['n', '12'], ['', ',\n'],
+         ['', '});\n\n'],
+         ['f', 'einzugStarten'], ['', '(akte);']],
+        [['y', '// Raten werden berechnet\n'],
+         ['k', 'for '], ['', '(const r '], ['k', 'of '], ['', 'akte.raten) {\n'],
+         ['', '  r.zinsen = '], ['f', 'berechne'], ['', '(r, '], ['s', "'gesetzlich'"], ['', ');\n'],
+         ['', '  '], ['k', 'if '], ['', '(r.ueberfaellig) '], ['f', 'warne'], ['', '(r);\n'],
+         ['', '}\n\n'],
+         ['f', 'speichern'], ['', '(akte); '], ['y', '// auf einem Bildschirm']],
+        [['y', '// Altdaten werden übernommen\n'],
+         ['k', 'const '], ['', 'alt = '], ['k', 'await '], ['f', 'lesen'], ['', '('], ['s', "'legacy.sql'"], ['', ');\n'],
+         ['k', 'const '], ['', 'ergebnis = '], ['k', 'await '], ['f', 'uebernehmen'], ['', '(alt, {\n'],
+         ['', '  pruefen: '], ['k', 'true'], ['', ',\n'],
+         ['', '  verlust: '], ['n', '0'], ['', ',\n'],
+         ['', '});\n\n'],
+         ['y', '// 1.284 Akten, keine einzige Zeile verloren']]
+      ]
+    };
+    var bloklar = KOD[dil] || KOD.tr;
 
     var azaltVar = azalt;
     var b = 0;
@@ -254,13 +293,31 @@
   function serit() {
     var kutular = document.querySelectorAll('.serit-kod .kayan');
     if (!kutular.length) return;
-    var parca = [
-      'const future = <b>await</b> build({ idea: <b>&#39;daha iyi bir i&#351;&#39;</b>, care: true });',
-      '<b>git</b> commit -m &quot;m&uuml;&#351;teri anlatt&#305;, biz yazd&#305;k&quot;',
-      'backup.verify() &rarr; <b>ok</b> &nbsp;&middot;&nbsp; 1.284 dosya &nbsp;&middot;&nbsp; 0 kay&#305;p',
-      'firewall.rule(<b>&#39;deny&#39;</b>, from: <b>&#39;*&#39;</b>, to: <b>&#39;musteri_verisi&#39;</b>);',
-      'deploy(<b>&#39;gokhansoftware&#39;</b>) &nbsp;&middot;&nbsp; <b>live</b>'
-    ];
+    var dil = (document.documentElement.lang || 'tr').slice(0, 2);
+    var SERIT = {
+      tr: [
+        'const gelecek = <b>await</b> kur({ fikir: <b>&#39;daha iyi bir i&#351;&#39;</b>, ozen: true });',
+        '<b>git</b> commit -m &quot;m&uuml;&#351;teri anlatt&#305;, biz yazd&#305;k&quot;',
+        'yedek.dogrula() &rarr; <b>tamam</b> &nbsp;&middot;&nbsp; 1.284 dosya &nbsp;&middot;&nbsp; 0 kay&#305;p',
+        'firewall.kural(<b>&#39;engelle&#39;</b>, kaynak: <b>&#39;*&#39;</b>, hedef: <b>&#39;musteri_verisi&#39;</b>);',
+        'yayinla(<b>&#39;gokhansoftware&#39;</b>) &nbsp;&middot;&nbsp; <b>canl&#305;</b>'
+      ],
+      en: [
+        'const future = <b>await</b> build({ idea: <b>&#39;a better business&#39;</b>, care: true });',
+        '<b>git</b> commit -m &quot;the client explained, we built it&quot;',
+        'backup.verify() &rarr; <b>ok</b> &nbsp;&middot;&nbsp; 1,284 files &nbsp;&middot;&nbsp; 0 lost',
+        'firewall.rule(<b>&#39;deny&#39;</b>, from: <b>&#39;*&#39;</b>, to: <b>&#39;customer_data&#39;</b>);',
+        'deploy(<b>&#39;gokhansoftware&#39;</b>) &nbsp;&middot;&nbsp; <b>live</b>'
+      ],
+      de: [
+        'const zukunft = <b>await</b> bauen({ idee: <b>&#39;ein besseres Gesch&auml;ft&#39;</b>, sorgfalt: true });',
+        '<b>git</b> commit -m &quot;Kunde hat erkl&auml;rt, wir haben gebaut&quot;',
+        'backup.pruefen() &rarr; <b>ok</b> &nbsp;&middot;&nbsp; 1.284 Dateien &nbsp;&middot;&nbsp; 0 verloren',
+        'firewall.regel(<b>&#39;sperren&#39;</b>, von: <b>&#39;*&#39;</b>, nach: <b>&#39;kundendaten&#39;</b>);',
+        'deploy(<b>&#39;gokhansoftware&#39;</b>) &nbsp;&middot;&nbsp; <b>live</b>'
+      ]
+    };
+    var parca = SERIT[dil] || SERIT.tr;
     var tek = parca.map(function (p) { return '<span>' + p + '</span>'; }).join('');
     for (var i = 0; i < kutular.length; i++) kutular[i].innerHTML = tek + tek;
   }

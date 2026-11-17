@@ -1,6 +1,6 @@
 /* Üye sayfaları için ortak yardımcılar. */
 window.UYE = (function () {
-  var SITE = 'https://gknsoftware.onrender.com';
+  var SITE = 'https://gokhansoftware.com';
   var H = { 'Content-Type': 'application/json', 'X-GA-Request': '1' };
 
   async function cagir(yontem, yol, govde) {
